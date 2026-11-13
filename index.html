@@ -6,6 +6,23 @@
     <title>Vence Handball Sport (VHS) - Gestion des Présences</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        vhs: {
+                            royal: '#141EF5',
+                            deep: '#0B10A0',
+                            gold: '#FAD000',
+                            goldLight: '#FFF5C2',
+                            goldDark: '#C6A300'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,9 +44,395 @@
             window.initFirebaseApp();
         }
     </script>
-    <script>
-        tailwind.config = {
-// ... existing code ... -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col antialiased">
+
+    <!-- En-tête principal -->
+    <header class="bg-vhs-royal text-white shadow-xl border-b-4 border-vhs-gold sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-white rounded-2xl p-1 shadow-inner flex items-center justify-center shrink-0 border-2 border-vhs-gold">
+                    <svg viewBox="0 0 200 200" class="w-full h-full text-vhs-royal" fill="currentColor">
+                        <path d="M100 10L35 30v70c0 45 35 75 65 85 30-10 65-40 65-85V30L100 10z" fill="#141EF5" stroke="#FAD000" stroke-width="8"/>
+                        <path d="M100 10L35 30v70c0 45 35 75 65 85V10z" fill="#141EF5"/>
+                        <path d="M100 10l65 20v70c0 45-35 75-65 85V10z" fill="#FAD000"/>
+                        <circle cx="100" cy="70" r="25" fill="#141EF5"/>
+                        <text x="100" y="150" font-size="20" font-weight="900" text-anchor="middle" fill="#0B10A0" font-family="sans-serif">VHS</text>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-black text-lg tracking-tight uppercase">Vence Handball Sport</h1>
+                        <span class="bg-vhs-gold text-vhs-deep font-extrabold text-[10px] px-2 py-0.5 rounded-full">VHS</span>
+                    </div>
+                    <p class="text-xs text-blue-100 font-medium">Gestion des présences & Convocations • Effectif : <strong id="headerPlayerCount">14</strong></p>
+                </div>
+            </div>
+
+            <!-- Boutons de rôle & mode coach -->
+            <div class="flex items-center gap-2 bg-black/20 p-1.5 rounded-xl border border-white/10">
+                <button id="roleBtnPlayer" onclick="switchUserRole('player')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
+                    <i data-lucide="users" class="w-3.5 h-3.5"></i> Joueur / Parent
+                </button>
+                <button id="roleBtnCoach" onclick="requestCoachMode()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
+                    <i data-lucide="shield" class="w-3.5 h-3.5"></i> Coach
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Barre d'actions rapides du coach (cachée par défaut si non coach) -->
+    <div id="coachHeaderActions" class="bg-vhs-deep text-white py-2 px-4 shadow-inner hidden flex-wrap items-center justify-between gap-2 border-b border-vhs-gold/20">
+        <div class="max-w-5xl mx-auto w-full flex flex-wrap items-center justify-between gap-2 text-xs">
+            <span class="font-extrabold text-vhs-gold flex items-center gap-1">
+                <i data-lucide="lock" class="w-3.5 h-3.5"></i> Mode Coach actif (Code: 06140)
+            </span>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="openEventModal()" class="px-3 py-1.5 rounded-lg bg-vhs-gold text-vhs-deep font-black shadow hover:bg-amber-300 transition cursor-pointer flex items-center gap-1">
+                    <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Nouvel Événement
+                </button>
+                <button onclick="openModal('playerModal')" class="px-3 py-1.5 rounded-lg bg-white/10 text-white font-bold hover:bg-white/20 transition cursor-pointer flex items-center gap-1">
+                    <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Ajouter Joueur
+                </button>
+                <button onclick="switchUserRole('player')" class="text-blue-200 hover:text-white underline font-semibold ml-2 cursor-pointer">Quitter Mode Coach</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation principale par onglets -->
+    <nav class="bg-vhs-deep text-white border-b border-white/10 sticky top-[69px] z-20 shadow-md">
+        <div class="max-w-5xl mx-auto px-4 flex items-center justify-between">
+            <div class="flex items-center gap-1 sm:gap-4 overflow-x-auto py-2">
+                <button id="nav-attendance" onclick="switchMainTab('attendance')" class="px-4 py-2 rounded-xl text-sm font-extrabold transition border-b-2 border-vhs-gold text-white cursor-pointer flex items-center gap-2">
+                    <i data-lucide="calendar-check" class="w-4 h-4"></i> Présences & Matchs
+                </button>
+                <button id="nav-matrix" onclick="switchMainTab('matrix')" class="px-4 py-2 rounded-xl text-sm font-semibold transition border-b-2 border-transparent text-blue-100 hover:text-white cursor-pointer flex items-center gap-2">
+                    <i data-lucide="grid" class="w-4 h-4"></i> Matrice Globale
+                </button>
+                <button id="nav-roster" onclick="switchMainTab('roster')" class="px-4 py-2 rounded-xl text-sm font-semibold transition border-b-2 border-transparent text-blue-100 hover:text-white cursor-pointer flex items-center gap-2">
+                    <i data-lucide="users" class="w-4 h-4"></i> Effectif VHS
+                </button>
+            </div>
+            <div id="coachQuickScheduleBtns" class="hidden items-center gap-1.5">
+                <button onclick="quickAddNextRegularTraining(1)" title="Ajouter le prochain Lundi (18h15)" class="px-2.5 py-1 bg-vhs-gold/20 hover:bg-vhs-gold/30 text-vhs-gold border border-vhs-gold/40 rounded-lg text-xs font-bold cursor-pointer hidden sm:block">+ Lundi</button>
+                <button onclick="quickAddNextRegularTraining(3)" title="Ajouter le prochain Mercredi (16h30)" class="px-2.5 py-1 bg-vhs-gold/20 hover:bg-vhs-gold/30 text-vhs-gold border border-vhs-gold/40 rounded-lg text-xs font-bold cursor-pointer hidden sm:block">+ Mercredi</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu Principal -->
+    <main class="max-w-5xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
+
+        <!-- 1. ONGLET PRÉSENCES & MATCHS -->
+        <div id="view-attendance" class="space-y-6">
+
+            <!-- Sélecteur d'événements -->
+            <section class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 sm:p-6 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 class="font-extrabold text-lg text-slate-900">Événements VHS</h2>
+                        <p class="text-xs text-slate-500">Sélectionnez une séance d'entraînement ou un match pour pointer les présences.</p>
+                    </div>
+                    <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+                        <button id="filter-all" onclick="setEventFilter('all')" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-vhs-royal text-white transition cursor-pointer">Tous</button>
+                        <button id="filter-training" onclick="setEventFilter('training')" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition cursor-pointer">Entraînements</button>
+                        <button id="filter-match" onclick="setEventFilter('match')" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition cursor-pointer">Matchs</button>
+                    </div>
+                </div>
+
+                <!-- Grille des événements -->
+                <div id="eventSelectorList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <!-- Rempli dynamiquement -->
+                </div>
+            </section>
+
+            <!-- Détail de l'événement actif -->
+            <section id="activeEventContainer" class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-5 sm:p-6 bg-gradient-to-r from-vhs-royal to-vhs-deep text-white flex flex-wrap items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span id="activeEventBadge" class="text-xs font-extrabold uppercase px-2.5 py-1 rounded-lg bg-blue-100 text-vhs-royal">Entraînement</span>
+                            <span id="activeEventDate" class="text-xs font-bold text-blue-100 flex items-center gap-1"></span>
+                        </div>
+                        <h3 id="activeEventTitle" class="text-xl sm:text-2xl font-black tracking-tight">Chargement...</h3>
+                        <p id="activeEventLocation" class="text-xs text-blue-100 flex items-center gap-1"></p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="copySummaryToClipboard()" class="px-4 py-2.5 rounded-xl bg-vhs-gold text-vhs-deep font-black text-xs shadow hover:bg-amber-300 transition cursor-pointer flex items-center gap-1.5">
+                            <i data-lucide="share-2" class="w-4 h-4"></i> Partager (WhatsApp)
+                        </button>
+                        <button id="deleteEventBtn" onclick="requestDeleteCurrentEvent()" class="p-2.5 rounded-xl bg-white/10 hover:bg-red-600 text-white transition cursor-pointer hidden" title="Supprimer cet événement">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Panneau de convocations (visible uniquement pour les matchs) -->
+                <div id="matchConvocationPanel" class="hidden border-b border-slate-200">
+                    <!-- Rempli dynamiquement si match -->
+                </div>
+
+                <!-- Statistiques rapides -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 sm:p-6 bg-slate-50 border-b border-slate-200">
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
+                        <div class="text-[10px] font-black uppercase text-slate-400">Présents</div>
+                        <div class="text-2xl font-black text-emerald-600" id="statPresent">0</div>
+                        <div class="text-[11px] text-slate-500 font-medium" id="statPresentSub">Confirmés</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
+                        <div class="text-[10px] font-black uppercase text-slate-400">Absents</div>
+                        <div class="text-2xl font-black text-red-600" id="statAbsent">0</div>
+                        <div class="text-[11px] text-slate-500 font-medium">Excusés ou absents</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
+                        <div class="text-[10px] font-black uppercase text-slate-400">En attente</div>
+                        <div class="text-2xl font-black text-amber-600" id="statPending">0</div>
+                        <div class="text-[11px] text-slate-500 font-medium">Non répondus</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
+                        <div class="text-[10px] font-black uppercase text-slate-400">Taux de présence</div>
+                        <div class="text-2xl font-black text-vhs-royal" id="statRate">0%</div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                            <div id="statProgressBar" class="bg-vhs-royal h-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Barre d'outils liste des joueurs -->
+                <div class="p-4 sm:px-6 bg-white flex flex-wrap items-center justify-between gap-3 border-b border-slate-100">
+                    <div class="relative flex-1 max-w-xs">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+                        <input type="text" id="playerSearchInput" oninput="renderAttendanceList()" placeholder="Filtrer un joueur..." class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-vhs-royal">
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="markAllPlayers('present')" class="text-xs font-bold px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl transition cursor-pointer">Tout Présent</button>
+                        <button onclick="markAllPlayers('absent')" class="text-xs font-bold px-3 py-2 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl transition cursor-pointer">Tout Absent</button>
+                    </div>
+                </div>
+
+                <!-- Liste interactive des joueurs -->
+                <div id="attendancePlayerList" class="divide-y divide-slate-100">
+                    <!-- Rempli dynamiquement -->
+                </div>
+            </section>
+        </div>
+
+        <!-- 2. ONGLET MATRICE GLOBALE -->
+        <div id="view-matrix" class="hidden space-y-6">
+            <section class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 sm:p-6 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 class="font-extrabold text-lg text-slate-900">Matrice des Présences</h2>
+                        <p class="text-xs text-slate-500">Vue d'ensemble de l'assiduité de tous les joueurs de Vence Handball Sport sur la saison.</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                    <table class="w-full text-left text-xs whitespace-nowrap">
+                        <thead id="matrixTableHead" class="bg-vhs-royal text-white"></thead>
+                        <tbody id="matrixTableBody" class="divide-y divide-slate-100 bg-white"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <!-- 3. ONGLET EFFECTIF -->
+        <div id="view-roster" class="hidden space-y-6">
+            <section class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 sm:p-6 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 class="font-extrabold text-lg text-slate-900">Effectif Officiel VHS</h2>
+                        <p class="text-xs text-slate-500">Liste des joueurs enregistrés dans l'équipe.</p>
+                    </div>
+                    <div id="rosterCoachActions" class="hidden">
+                        <button onclick="openModal('playerModal')" class="px-3 py-2 rounded-xl bg-vhs-royal text-white font-bold text-xs shadow hover:bg-blue-700 transition cursor-pointer flex items-center gap-1">
+                            <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Ajouter un joueur
+                        </button>
+                    </div>
+                </div>
+                <div id="rosterGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <!-- Rempli dynamiquement -->
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-vhs-deep text-blue-200 py-6 text-center text-xs mt-12 border-t-2 border-vhs-gold">
+        <div class="max-w-5xl mx-auto px-4 space-y-2">
+            <p class="font-extrabold text-white text-sm">VENCE HANDBALL SPORT (VHS) • 🤾‍♂️🔵🟡</p>
+            <p>Gymnase Dandreis, Vence (06140) • Entraînements Lundi (18h15) & Mercredi (16h30)</p>
+        </div>
+    </footer>
+
+    <!-- ========================================================= -->
+    <!-- MODAUX & DIALOGUES                                        -->
+    <!-- ========================================================= -->
+
+    <!-- Modal Code PIN Coach -->
+    <div id="coachPinModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 border border-slate-200">
+            <div class="flex items-center justify-between">
+                <h3 class="font-black text-base text-slate-900 flex items-center gap-2">
+                    <i data-lucide="shield" class="w-5 h-5 text-vhs-royal"></i> Accès Mode Coach
+                </h3>
+                <button onclick="closeModal('coachPinModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer">✕</button>
+            </div>
+            <p class="text-xs text-slate-500">Entrez le code PIN du coach pour modifier les entraînements, les matchs et les convocations.</p>
+            <form onsubmit="handleCoachPinSubmit(event)" class="space-y-3">
+                <input type="password" id="coachPinInput" placeholder="Code PIN (ex: 06140)" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-lg font-black tracking-widest focus:outline-none focus:border-vhs-royal" maxlength="6" autocomplete="current-password">
+                <p id="coachPinError" class="text-xs text-red-600 font-bold text-center hidden">Code PIN incorrect (Indice: 06140)</p>
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" class="flex-1 py-3 bg-vhs-royal text-white font-extrabold rounded-xl text-xs hover:bg-blue-700 transition cursor-pointer">Valider</button>
+                    <button type="button" onclick="activateCoachModeDirect()" class="px-4 py-3 bg-vhs-gold text-vhs-deep font-black rounded-xl text-xs hover:bg-amber-300 transition cursor-pointer" title="Connexion immédiate en test">Accès direct (1 clic)</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Ajout Événement -->
+    <div id="eventModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200">
+            <div class="flex items-center justify-between">
+                <h3 class="font-black text-base text-slate-900 flex items-center gap-2">
+                    <i data-lucide="calendar-plus" class="w-5 h-5 text-vhs-royal"></i> Nouvel Événement VHS
+                </h3>
+                <button onclick="closeModal('eventModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer">✕</button>
+            </div>
+
+            <!-- Boutons rapides pour créer les horaires types -->
+            <div id="regularPresetBar" class="p-3 bg-vhs-goldLight/60 rounded-2xl border border-vhs-goldDark/30 space-y-2">
+                <span class="text-[11px] font-extrabold uppercase text-vhs-deep">Horaires officiels VHS :</span>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" onclick="fillPresetTraining(1)" class="px-3 py-2 bg-white text-vhs-royal border border-vhs-royal/30 font-bold text-xs rounded-xl shadow-xs hover:bg-blue-50 cursor-pointer">🤾 Lundi (18h15)</button>
+                    <button type="button" onclick="fillPresetTraining(3)" class="px-3 py-2 bg-white text-vhs-royal border border-vhs-royal/30 font-bold text-xs rounded-xl shadow-xs hover:bg-blue-50 cursor-pointer">🤾 Mercredi (16h30)</button>
+                </div>
+            </div>
+
+            <form onsubmit="handleAddEvent(event)" class="space-y-4">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-700">Type d'événement</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 font-bold text-xs">
+                            <input type="radio" name="eventType" value="training" checked onchange="onEventTypeOrDateChange()" class="text-vhs-royal"> Entraînement
+                        </label>
+                        <label class="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 font-bold text-xs">
+                            <input type="radio" name="eventType" value="match" onchange="onEventTypeOrDateChange()" class="text-vhs-royal"> Match 🏆
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-700">Titre</label>
+                    <input type="text" id="eventTitle" required placeholder="Ex: Entraînement Lundi ou Match vs Nice" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-vhs-royal">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-700">Date</label>
+                        <input type="date" id="eventDate" required onchange="onEventTypeOrDateChange()" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-vhs-royal">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-700">Heure début</label>
+                        <input type="time" id="eventTime" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-vhs-royal">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-700">Heure fin (optionnel)</label>
+                        <input type="time" id="eventEndTime" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-vhs-royal">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-700">Lieu</label>
+                        <input type="text" id="eventLocation" value="Gymnase Dandreis, Vence" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-vhs-royal">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('eventModal')" class="px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs cursor-pointer">Annuler</button>
+                    <button type="submit" class="px-5 py-2.5 bg-vhs-royal text-white font-extrabold rounded-xl text-xs hover:bg-blue-700 transition cursor-pointer">Créer l'événement</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Ajout Joueur -->
+    <div id="playerModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 border border-slate-200">
+            <div class="flex items-center justify-between">
+                <h3 class="font-black text-base text-slate-900 flex items-center gap-2">
+                    <i data-lucide="user-plus" class="w-5 h-5 text-vhs-royal"></i> Ajouter un joueur
+                </h3>
+                <button onclick="closeModal('playerModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer">✕</button>
+            </div>
+            <form onsubmit="handleAddPlayer(event)" class="space-y-3">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-700">Nom et Prénom</label>
+                    <input type="text" id="playerName" required placeholder="Ex: Lucas" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-vhs-royal">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-700">Numéro de maillot (optionnel)</label>
+                    <input type="number" id="playerNumber" placeholder="Ex: 14" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-vhs-royal">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-700">Rôle</label>
+                    <select id="playerRole" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-vhs-royal">
+                        <option value="Joueur">Joueur / Champ</option>
+                        <option value="Gardien">Gardien de but</option>
+                        <option value="Capitaine">Capitaine</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('playerModal')" class="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs cursor-pointer">Annuler</button>
+                    <button type="submit" class="px-4 py-2 bg-vhs-royal text-white font-extrabold rounded-xl text-xs hover:bg-blue-700 transition cursor-pointer">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Note -->
+    <div id="noteModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 border border-slate-200">
+            <div class="flex items-center justify-between">
+                <h3 class="font-black text-base text-slate-900">Note / Commentaire</h3>
+                <button onclick="closeModal('noteModal')" class="text-slate-400 hover:text-slate-600 cursor-pointer">✕</button>
+            </div>
+            <p class="text-xs text-slate-500">Ajouter une précision pour <strong id="notePlayerName" class="text-slate-800"></strong> :</p>
+            <form onsubmit="handleSaveNote(event)" class="space-y-3">
+                <input type="hidden" id="notePlayerId">
+                <textarea id="noteInput" rows="3" placeholder="Ex: En retard de 15 min, blessé, etc." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-vhs-royal"></textarea>
+                <div class="flex flex-wrap gap-1.5">
+                    <button type="button" onclick="setQuickNote('En retard')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-semibold text-slate-700 cursor-pointer">En retard</button>
+                    <button type="button" onclick="setQuickNote('Blessé')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-semibold text-slate-700 cursor-pointer">Blessé</button>
+                    <button type="button" onclick="setQuickNote('Excusé')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-semibold text-slate-700 cursor-pointer">Excusé</button>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('noteModal')" class="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs cursor-pointer">Annuler</button>
+                    <button type="submit" class="px-4 py-2 bg-vhs-royal text-white font-extrabold rounded-xl text-xs hover:bg-blue-700 transition cursor-pointer">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Confirmation -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 border border-slate-200 text-center">
+            <h3 id="confirmTitle" class="font-black text-base text-slate-900">Confirmation</h3>
+            <p id="confirmMessage" class="text-xs text-slate-600">Êtes-vous sûr de vouloir effectuer cette action ?</p>
+            <div class="flex justify-center gap-2 pt-2">
+                <button type="button" onclick="closeModal('confirmModal')" class="px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs cursor-pointer">Annuler</button>
+                <button type="button" id="confirmActionBtn" class="px-5 py-2.5 bg-red-600 text-white font-extrabold rounded-xl text-xs hover:bg-red-700 transition cursor-pointer">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteneur Toast Notifications -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
     <!-- ========================================================= -->
     <!-- SCRIPT JAVASCRIPT COMPLET                                 -->
     <!-- ========================================================= -->
@@ -88,24 +491,6 @@
                     endTime: '16:00',
                     location: 'Gymnase Dandreis, Vence (Domicile)',
                     selectedPlayerIds: ['p1', 'p2', 'p3', 'p5', 'p6', 'p7', 'p9', 'p10', 'p12', 'p13']
-                },
-                {
-                    id: 'e_lun2',
-                    type: 'training',
-                    title: 'Entraînement Lundi',
-                    date: '2026-11-23',
-                    time: '18:15',
-                    endTime: '19:30',
-                    location: 'Gymnase Dandreis, Vence'
-                },
-                {
-                    id: 'e_mer2',
-                    type: 'training',
-                    title: 'Entraînement Mercredi',
-                    date: '2026-11-25',
-                    time: '16:30',
-                    endTime: '18:00',
-                    location: 'Gymnase Dandreis, Vence'
                 }
             ];
         }
@@ -238,7 +623,7 @@
                 });
 
             } catch (e) {
-                console.warn("Firebase non disponible, fonctionnement en mode local autonome:", e);
+                console.warn("Firebase non disponible, fonctionnement en mode local:", e);
             }
         };
 
@@ -317,7 +702,6 @@
             const btnCoach = document.getElementById('roleBtnCoach');
             const coachHeaderActions = document.getElementById('coachHeaderActions');
             const coachQuickScheduleBtns = document.getElementById('coachQuickScheduleBtns');
-            const playerModeBannerHint = document.getElementById('playerModeBannerHint');
             const rosterCoachActions = document.getElementById('rosterCoachActions');
 
             if (isCoach()) {
@@ -325,14 +709,12 @@
                 if (btnPlayer) btnPlayer.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer text-blue-100 hover:text-white';
                 if (coachHeaderActions) { coachHeaderActions.classList.remove('hidden'); coachHeaderActions.classList.add('flex'); }
                 if (coachQuickScheduleBtns) { coachQuickScheduleBtns.classList.remove('hidden'); coachQuickScheduleBtns.classList.add('flex'); }
-                if (playerModeBannerHint) playerModeBannerHint.classList.add('hidden');
                 if (rosterCoachActions) { rosterCoachActions.classList.remove('hidden'); rosterCoachActions.classList.add('flex'); }
             } else {
                 if (btnPlayer) btnPlayer.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer bg-white text-vhs-deep shadow-xs';
                 if (btnCoach) btnCoach.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer text-blue-100 hover:text-white';
                 if (coachHeaderActions) { coachHeaderActions.classList.add('hidden'); coachHeaderActions.classList.remove('flex'); }
                 if (coachQuickScheduleBtns) { coachQuickScheduleBtns.classList.add('hidden'); coachQuickScheduleBtns.classList.remove('flex'); }
-                if (playerModeBannerHint) playerModeBannerHint.classList.remove('hidden');
                 if (rosterCoachActions) { rosterCoachActions.classList.add('hidden'); rosterCoachActions.classList.remove('flex'); }
             }
         }
@@ -429,41 +811,6 @@
             saveState();
             switchMainTab('attendance');
             showToast(`${sched.title} ajouté`);
-        }
-
-        function generateNextFourWeeksTrainings() {
-            if (!isCoach()) return;
-            const baseDate = new Date();
-            let addedCount = 0;
-            for (let i = 0; i < 28; i++) {
-                const d = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate() + i);
-                const dow = d.getDay();
-                if (dow === 1 || dow === 3) {
-                    const iso = toLocalISODate(d);
-                    const exists = appState.events.some(ev => ev.type === 'training' && ev.date === iso);
-                    if (!exists) {
-                        const sched = REGULAR_SCHEDULES[dow];
-                        appState.events.push({
-                            id: `ev_${iso}_${dow}_${Math.random().toString(36).slice(2, 6)}`,
-                            type: 'training',
-                            title: sched.title,
-                            date: iso,
-                            time: sched.start,
-                            endTime: sched.end,
-                            location: 'Gymnase Dandreis, Vence'
-                        });
-                        addedCount++;
-                    }
-                }
-            }
-            if (addedCount > 0) {
-                appState.events.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
-                saveState();
-                renderAll();
-                showToast(`${addedCount} entraînements ajoutés !`);
-            } else {
-                showToast('Entraînements déjà planifiés.');
-            }
         }
 
         function openEventModal() {
@@ -604,7 +951,7 @@
         }
 
         function renderActiveEvent() {
-            const panel = document.getElementById('activeEventPanel');
+            const panel = document.getElementById('activeEventContainer');
             if (!panel) return;
             const ev = appState.events.find(e => e.id === appState.selectedEventId);
 
@@ -621,13 +968,13 @@
             }
 
             const dateEl = document.getElementById('activeEventDate');
-            if (dateEl) dateEl.innerHTML = `<i data-lucide="clock" class="w-4 h-4 text-vhs-royal"></i> <span class="capitalize">${formatFrenchDate(ev.date)}</span> • <strong>${formatTimeSlot(ev.time, ev.endTime)}</strong>`;
+            if (dateEl) dateEl.innerHTML = `<i data-lucide="clock" class="w-4 h-4 text-blue-100"></i> <span class="capitalize">${formatFrenchDate(ev.date)}</span> • <strong>${formatTimeSlot(ev.time, ev.endTime)}</strong>`;
             
             const titleEl = document.getElementById('activeEventTitle');
             if (titleEl) titleEl.textContent = ev.title;
 
             const locEl = document.getElementById('activeEventLocation');
-            if (locEl) locEl.innerHTML = `<i data-lucide="map-pin" class="w-4 h-4 text-vhs-royal shrink-0"></i> <span>${escapeHtml(ev.location || 'Gymnase Dandreis')}</span>`;
+            if (locEl) locEl.innerHTML = `<i data-lucide="map-pin" class="w-4 h-4 text-blue-100 shrink-0"></i> <span>${escapeHtml(ev.location || 'Gymnase Dandreis')}</span>`;
 
             const deleteBtn = document.getElementById('deleteEventBtn');
             if (deleteBtn) {
