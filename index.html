@@ -18,664 +18,30 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Exposer Firebase globalement pour les fonctions de l'application
         window.firebaseModules = {
             initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged,
             getFirestore, doc, setDoc, onSnapshot
         };
         
-        // Déclencher l'initialisation Firebase dès que le module est chargé
         if (window.initFirebaseApp) {
             window.initFirebaseApp();
         }
     </script>
     <script>
         tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        vhs: {
-                            royal: '#141EF5',
-                            blue: '#1E29F6',
-                            deep: '#0C129E',
-                            gold: '#FAD000',
-                            goldDark: '#E0B800',
-                            goldLight: '#FFF9D6',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Personnalisation des barres de défilement */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 9999px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
-</head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-vhs-gold selection:text-vhs-deep">
-
-    <!-- NOTIFICATION TOAST (Remplace alert()) -->
-    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
-
-    <!-- EN-TÊTE OFFICIEL DU CLUB VENCE HANDBALL SPORT -->
-    <header class="bg-gradient-to-r from-vhs-deep via-vhs-royal to-vhs-blue text-white shadow-lg sticky top-0 z-30 border-b-2 border-vhs-gold">
-        <div class="max-w-6xl mx-auto px-4 py-3 sm:py-3.5 flex flex-wrap items-center justify-between gap-3">
-            <!-- Logo Écusson Officiel VHS & Identité -->
-            <div class="flex items-center gap-3.5">
-                <div class="w-12 h-14 sm:w-14 sm:h-16 shrink-0 drop-shadow-md flex items-center justify-center">
-                    <!-- Reproduction Vectorielle Fidèle de l'Écusson Vence Handball Sport -->
-                    <svg viewBox="0 0 220 265" class="w-full h-full overflow-visible" xmlns="http://www.w3.org/2000/svg" aria-label="Logo Vence Handball Sport">
-                        <defs>
-                            <!-- Forme extérieure du bouclier avec créneaux en haut -->
-                            <path id="vhsShieldOuter" d="M 10,16 L 52,10 L 52,18 L 84,15 L 84,4 L 136,4 L 136,15 L 168,18 L 168,10 L 210,16 L 210,132 C 210,192 168,236 110,259 C 52,236 10,192 10,132 Z"/>
-                            <!-- Forme intérieure du bouclier -->
-                            <path id="vhsShieldInner" d="M 20,25 L 200,25 L 200,130 C 200,183 162,223 110,245 C 58,223 20,183 20,130 Z"/>
-                            <clipPath id="vhsInnerClip">
-                                <use href="#vhsShieldInner"/>
-                            </clipPath>
-                        </defs>
-
-                        <!-- Fond Bordure Or / Jaune vif -->
-                        <use href="#vhsShieldOuter" fill="#FAD000"/>
-
-                        <!-- Intérieur divisé verticalement : Bleu Royal à gauche, Or à droite -->
-                        <g clip-path="url(#vhsInnerClip)">
-                            <rect x="0" y="0" width="110" height="265" fill="#141EF5"/>
-                            <rect x="110" y="0" width="110" height="265" fill="#FAD000"/>
-
-                            <!-- Motif Ballon de Handball en bas du bouclier -->
-                            <g transform="translate(110, 198)" fill="none" stroke-width="3.2" stroke-linejoin="round">
-                                <!-- Cercle extérieur du ballon -->
-                                <circle cx="0" cy="0" r="46" stroke="#141EF5"/>
-                                <path d="M 0,-46 A 46,46 0 0,0 0,46" stroke="#FAD000"/>
-                                <!-- Pentagones / Hexagones géométriques -->
-                                <polygon points="0,-16 15,-5 9,13 -9,13 -15,-5" stroke="#141EF5"/>
-                                <polyline points="0,-16 -15,-5 -9,13 0,13" stroke="#FAD000"/>
-                                <line x1="0" y1="-16" x2="0" y2="-33" stroke="#FAD000"/>
-                                <line x1="15" y1="-5" x2="31" y2="-10" stroke="#141EF5"/>
-                                <line x1="9" y1="13" x2="20" y2="27" stroke="#141EF5"/>
-                                <line x1="-9" y1="13" x2="-20" y2="27" stroke="#FAD000"/>
-                                <line x1="-15" y1="-5" x2="-31" y2="-10" stroke="#FAD000"/>
-                                <!-- Lignes périphériques du ballon -->
-                                <polyline points="-31,-10 -22,-28 0,-33 22,-28 31,-10 35,10 20,27 0,34 -20,27 -35,10 -31,-10" stroke="#141EF5"/>
-                                <polyline points="0,-33 -22,-28 -31,-10 -35,10 -20,27 0,34" stroke="#FAD000"/>
-                            </g>
-
-                            <!-- Silhouette du joueur de handball en extension avec ballon -->
-                            <g transform="translate(0, 2)">
-                                <!-- Ballon tenu dans la main droite (côté gauche bleu) -->
-                                <circle cx="67" cy="64" r="8.5" fill="#FAD000"/>
-                                
-                                <!-- Corps du joueur (or à gauche, bleu à droite) -->
-                                <path d="M 74,62 C 81,64 89,64 96,61 C 99,58 103,56 108,56 C 106,53 105,49 107,45 C 109,41 114,40 118,43 C 121,46 121,51 118,55 C 122,57 128,57 134,53 L 141,45 C 141,42 143,39 145,40 C 146,41 146,44 146,45 C 147,42 149,39 151,40 C 152,41 151,44 150,46 C 152,43 154,41 155,42 C 156,43 154,46 153,48 C 155,46 157,45 158,46 C 158,48 155,51 151,53 L 144,62 C 138,67 132,68 128,68 C 129,76 127,85 123,93 C 120,101 115,109 108,117 C 104,121 100,122 98,119 C 96,116 98,111 101,106 L 94,109 C 90,111 87,108 89,103 L 94,94 C 86,102 76,111 66,117 C 61,120 57,118 59,114 C 61,110 70,102 79,93 C 87,85 93,78 96,71 C 89,71 81,69 74,66 Z" fill="#FAD000" stroke="#141EF5" stroke-width="2"/>
-                                
-                                <!-- Moitié droite du joueur en bleu royal pour le contraste bicolore -->
-                                <g clip-path="url(#rightHalfPlayerClip)">
-                                    <path d="M 74,62 C 81,64 89,64 96,61 C 99,58 103,56 108,56 C 106,53 105,49 107,45 C 109,41 114,40 118,43 C 121,46 121,51 118,55 C 122,57 128,57 134,53 L 141,45 C 141,42 143,39 145,40 C 146,41 146,44 146,45 C 147,42 149,39 151,40 C 152,41 151,44 150,46 C 152,43 154,41 155,42 C 156,43 154,46 153,48 C 155,46 157,45 158,46 C 158,48 155,51 151,53 L 144,62 C 138,67 132,68 128,68 C 129,76 127,85 123,93 C 120,101 115,109 108,117 C 104,121 100,122 98,119 C 96,116 98,111 101,106 L 94,109 C 90,111 87,108 89,103 L 94,94 C 86,102 76,111 66,117 C 61,120 57,118 59,114 C 61,110 70,102 79,93 C 87,85 93,78 96,71 C 89,71 81,69 74,66 Z" fill="#FAD000" stroke="#141EF5" stroke-width="2.2"/>
-                                </g>
-                                <!-- Numéro 14 sur le maillot -->
-                                <text x="114" y="73" fill="#141EF5" font-family="Inter, sans-serif" font-weight="900" font-style="italic" font-size="11.5" text-anchor="middle">14</text>
-                            </g>
-
-                            <!-- Bandeau typographique central VENCE / HANDBALL SPORT -->
-                            <g transform="translate(110, 142)">
-                                <!-- Contour d'arrière-plan pour la lisibilité parfaite sur le split bleu/or -->
-                                <text x="0" y="0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-style="italic" font-size="37" letter-spacing="1" stroke="#141EF5" stroke-width="6" stroke-linejoin="round" fill="#141EF5">VENCE</text>
-                                <text x="0" y="0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-style="italic" font-size="37" letter-spacing="1" fill="#FAD000">VENCE</text>
-
-                                <text x="0" y="18" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-style="italic" font-size="14.5" letter-spacing="0.6" stroke="#141EF5" stroke-width="4.5" stroke-linejoin="round" fill="#141EF5">HANDBALL SPORT</text>
-                                <text x="0" y="18" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-style="italic" font-size="14.5" letter-spacing="0.6" fill="#FAD000">HANDBALL SPORT</text>
-                            </g>
-                        </g>
-                    </svg>
-                </div>
-
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="text-lg sm:text-xl font-black italic tracking-tight leading-none text-white">VENCE HANDBALL SPORT</h1>
-                        <span class="bg-vhs-gold text-vhs-deep text-xs font-black px-2 py-0.5 rounded-full shadow-xs">VHS</span>
-                    </div>
-                    <p class="text-xs sm:text-sm text-blue-100 mt-1 font-medium flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                        <span>Présences &amp; Convocations</span>
-                        <span class="text-vhs-gold hidden md:inline">•</span>
-                        <span class="text-vhs-gold text-xs font-semibold hidden md:inline">Lun. 18h15-19h30 &amp; Mer. 16h30-18h00</span>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Actions Globales & Sélecteur de Mode (Joueur/Parent vs Coach) -->
-            <div class="flex flex-wrap items-center gap-2">
-                <!-- Bascule de Rôle -->
-                <div class="flex items-center bg-vhs-deep/80 p-1 rounded-xl border border-white/20 shadow-inner">
-                    <button id="roleBtnPlayer" onclick="switchUserRole('player')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer bg-white text-vhs-deep shadow-xs">
-                        <i data-lucide="users" class="w-3.5 h-3.5 text-vhs-royal"></i>
-                        <span>Joueur / Parent</span>
-                    </button>
-                    <button id="roleBtnCoach" onclick="requestCoachMode()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer text-blue-100 hover:text-white">
-                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-vhs-gold"></i>
-                        <span>Mode Coach</span>
-                    </button>
-                </div>
-
-                <!-- Boutons réservés au Coach -->
-                <div id="coachHeaderActions" class="hidden items-center gap-2">
-                    <button onclick="openEventModal()" class="flex items-center gap-1.5 bg-vhs-gold hover:bg-vhs-goldDark active:scale-95 text-vhs-deep text-xs sm:text-sm font-extrabold px-3.5 py-2 rounded-xl shadow-md transition cursor-pointer">
-                        <i data-lucide="calendar-plus" class="w-4 h-4"></i>
-                        <span>+ Séance / Match</span>
-                    </button>
-                    <button onclick="openModal('playerModal')" class="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 active:scale-95 text-white border border-white/25 text-xs sm:text-sm font-bold px-3 py-2 rounded-xl transition cursor-pointer">
-                        <i data-lucide="user-plus" class="w-4 h-4 text-vhs-gold"></i>
-                        <span class="hidden sm:inline">+ Joueur</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- NAVIGATION PRINCIPALE (Onglets de vue) -->
-        <div class="bg-vhs-deep/50 border-t border-white/15">
-            <div class="max-w-6xl mx-auto px-4 flex gap-1 sm:gap-2 overflow-x-auto no-scrollbar">
-                <button id="nav-attendance" onclick="switchMainTab('attendance')" class="py-2.5 px-4 text-xs sm:text-sm font-extrabold border-b-2 border-vhs-gold text-white flex items-center gap-2 whitespace-nowrap transition cursor-pointer">
-                    <i data-lucide="clipboard-check" class="w-4 h-4 text-vhs-gold"></i>
-                    Pointage Séance
-                </button>
-                <button id="nav-matrix" onclick="switchMainTab('matrix')" class="py-2.5 px-4 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-blue-100 hover:text-white flex items-center gap-2 whitespace-nowrap transition cursor-pointer">
-                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
-                    Récapitulatif &amp; Assiduité
-                </button>
-                <button id="nav-roster" onclick="switchMainTab('roster')" class="py-2.5 px-4 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-blue-100 hover:text-white flex items-center gap-2 whitespace-nowrap transition cursor-pointer">
-                    <i data-lucide="users" class="w-4 h-4"></i>
-                    Effectif (<span id="headerPlayerCount">14</span>)
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- BANDEAU RAPPEL DES CRÉNEAUX D'ENTRAÎNEMENT HABITUELS -->
-    <div class="bg-vhs-goldLight border-b border-vhs-gold/60 text-vhs-deep">
-        <div class="max-w-6xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 font-semibold">
-                <span class="inline-flex items-center gap-1.5 font-extrabold uppercase tracking-wide text-vhs-royal">
-                    <i data-lucide="clock" class="w-3.5 h-3.5"></i>
-                    Entraînements habituels :
-                </span>
-                <span class="bg-white/80 px-2.5 py-0.5 rounded-lg border border-vhs-gold/50">
-                    <strong>Lundi :</strong> 18h15 – 19h30
-                </span>
-                <span class="bg-white/80 px-2.5 py-0.5 rounded-lg border border-vhs-gold/50">
-                    <strong>Mercredi :</strong> 16h30 – 18h00
-                </span>
-            </div>
-            <div id="coachQuickScheduleBtns" class="hidden items-center gap-1.5">
-                <button onclick="quickAddNextRegularTraining(1)" class="bg-vhs-royal hover:bg-vhs-deep text-white font-bold px-2.5 py-1 rounded-lg transition cursor-pointer">
-                    + Prochain Lundi
-                </button>
-                <button onclick="quickAddNextRegularTraining(3)" class="bg-vhs-royal hover:bg-vhs-deep text-white font-bold px-2.5 py-1 rounded-lg transition cursor-pointer">
-                    + Prochain Mercredi
-                </button>
-                <button onclick="generateNextFourWeeksTrainings()" class="hidden sm:inline-flex items-center gap-1 bg-white hover:bg-amber-50 text-vhs-deep border border-vhs-goldDark/40 font-bold px-2.5 py-1 rounded-lg transition cursor-pointer" title="Générer automatiquement les entraînements des 4 prochaines semaines">
-                    <i data-lucide="sparkles" class="w-3 h-3 text-vhs-royal"></i>
-                    + 4 semaines
-                </button>
-            </div>
-            <div id="playerModeBannerHint" class="flex items-center gap-1.5 text-[11px] font-bold text-vhs-royal">
-                <i data-lucide="info" class="w-3.5 h-3.5"></i>
-                <span>Mode Joueur / Parent actif • Sélection réservée au Coach</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- CONTENU PRINCIPAL -->
-    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
-
-        <!-- ========================================================= -->
-        <!-- VUE 1 : POINTAGE DES PRÉSENCES PAR ÉVÉNEMENT              -->
-        <!-- ========================================================= -->
-        <section id="view-attendance" class="space-y-6">
-            
-            <!-- Sélecteur d'événements (Cartes défilables) -->
-            <div>
-                <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-vhs-royal"></i>
-                        Sélectionner un entraînement ou un match
-                    </h2>
-                    <div class="flex gap-1.5">
-                        <button onclick="setEventFilter('all')" id="filter-all" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-vhs-royal text-white transition cursor-pointer">Tous</button>
-                        <button onclick="setEventFilter('training')" id="filter-training" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition cursor-pointer">Entraînements</button>
-                        <button onclick="setEventFilter('match')" id="filter-match" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition cursor-pointer">Matchs</button>
-                    </div>
-                </div>
-
-                <!-- Liste des événements -->
-                <div id="eventSelectorList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    <!-- Généré dynamiquement par JS -->
-                </div>
-            </div>
-
-            <!-- Carte détaillée de l'événement sélectionné -->
-            <div id="activeEventPanel" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <!-- Bannière de l'événement -->
-                <div class="p-4 sm:p-6 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div class="space-y-1.5">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span id="activeEventBadge" class="text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-blue-100 text-vhs-royal">
-                                ENTRAÎNEMENT
-                            </span>
-                            <span id="activeEventDate" class="text-sm font-semibold text-slate-700 flex items-center gap-1">
-                                <i data-lucide="clock" class="w-4 h-4 text-vhs-royal"></i>
-                                Lundi 16 Nov • 18h15 - 19h30
-                            </span>
-                        </div>
-                        <h3 id="activeEventTitle" class="text-xl sm:text-2xl font-black text-vhs-deep">
-                            Entraînement Lundi
-                        </h3>
-                        <p id="activeEventLocation" class="text-sm text-slate-500 flex items-center gap-1.5">
-                            <i data-lucide="map-pin" class="w-4 h-4 text-vhs-royal shrink-0"></i>
-                            <span>Gymnase Dandreis, Vence</span>
-                        </p>
-                    </div>
-
-                    <!-- Boutons d'action de l'événement (Copier WhatsApp + Supprimer) -->
-                    <div class="flex flex-wrap items-center gap-2 self-start md:self-center">
-                        <button onclick="copySummaryToClipboard()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl shadow-sm transition cursor-pointer">
-                            <i data-lucide="share-2" class="w-4 h-4"></i>
-                            <span>Copier pour WhatsApp</span>
-                        </button>
-                        <button id="deleteEventBtn" onclick="requestDeleteCurrentEvent()" title="Supprimer cet événement" class="hidden p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl border border-slate-200 transition cursor-pointer">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- PANNEAU SPÉCIAL CONVOCATIONS MATCH (Visible uniquement pour les Matchs) -->
-                <div id="matchConvocationPanel" class="hidden border-b border-slate-200">
-                    <!-- Contenu généré dynamiquement selon Mode Coach ou Mode Joueur/Parent -->
-                </div>
-
-                <!-- Compteurs Statistiques en temps réel -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 bg-slate-50/70 border-b border-slate-200">
-                    <div class="p-3.5 sm:p-4 flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-lg shrink-0" id="statPresent">0</div>
-                        <div>
-                            <div class="text-xs font-bold uppercase text-emerald-700">Présents</div>
-                            <div class="text-[11px] text-slate-500" id="statPresentSub">Confirmés</div>
-                        </div>
-                    </div>
-                    <div class="p-3.5 sm:p-4 flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-red-100 text-red-700 flex items-center justify-center font-black text-lg shrink-0" id="statAbsent">0</div>
-                        <div>
-                            <div class="text-xs font-bold uppercase text-red-700">Absents</div>
-                            <div class="text-[11px] text-slate-500">Excusés / Non dispo</div>
-                        </div>
-                    </div>
-                    <div class="p-3.5 sm:p-4 flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-black text-lg shrink-0" id="statPending">0</div>
-                        <div>
-                            <div class="text-xs font-bold uppercase text-amber-700">Incertains</div>
-                            <div class="text-[11px] text-slate-500">En attente</div>
-                        </div>
-                    </div>
-                    <div class="p-3.5 sm:p-4 flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-blue-100 text-vhs-royal flex items-center justify-center font-black text-sm shrink-0" id="statRate">0%</div>
-                        <div class="w-full">
-                            <div class="text-xs font-bold uppercase text-vhs-deep" id="statRateLabel">Taux présence</div>
-                            <div class="w-full bg-slate-200 h-1.5 rounded-full mt-1 overflow-hidden">
-                                <div id="statProgressBar" class="bg-vhs-royal h-full rounded-full transition-all duration-300" style="width: 0%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Barre d'actions rapides de pointage -->
-                <div class="px-4 sm:px-6 py-3 bg-white border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
-                    <div class="relative flex-1 min-w-[200px] max-w-xs">
-                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-                        <input type="text" id="playerSearchInput" oninput="renderAttendanceList()" placeholder="Rechercher un joueur..." class="w-full pl-9 pr-3 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-vhs-royal focus:bg-white transition">
-                    </div>
-                    <div class="flex items-center gap-2 text-xs">
-                        <span class="text-slate-400 hidden sm:inline">Tout marquer :</span>
-                        <button onclick="markAllPlayers('present')" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold border border-emerald-200 transition cursor-pointer">
-                            Tous Présents
-                        </button>
-                        <button onclick="markAllPlayers('pending')" class="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 font-semibold border border-slate-200 transition cursor-pointer">
-                            Réinitialiser
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Liste des joueurs pour le pointage -->
-                <div id="attendancePlayerList" class="divide-y divide-slate-100">
-                    <!-- Généré dynamiquement par JS -->
-                </div>
-            </div>
-        </section>
-
-        <!-- ========================================================= -->
-        <!-- VUE 2 : RÉCAPITULATIF & MATRICE GLOBALE D'ASSIDUITÉ       -->
-        <!-- ========================================================= -->
-        <section id="view-matrix" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-                    <div>
-                        <h2 class="text-lg sm:text-xl font-extrabold text-vhs-deep flex items-center gap-2">
-                            <i data-lucide="table" class="w-5 h-5 text-vhs-royal"></i>
-                            Tableau global d'assiduité VHS
-                        </h2>
-                        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Vue d'ensemble des présences aux entraînements et matchs pour chaque joueur.</p>
-                    <div class="flex items-center gap-3 text-xs font-semibold bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 flex-wrap">
-                        <span class="flex items-center gap-1 text-emerald-700"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Présent</span>
-                        <span class="flex items-center gap-1 text-red-700"><span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> Absent</span>
-                        <span class="flex items-center gap-1 text-amber-700"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Incertain</span>
-                        <span class="flex items-center gap-1 text-slate-500"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 inline-block"></span> Non convoqué (Match)</span>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto rounded-xl border border-slate-200">
-                    <table class="w-full text-left border-collapse text-sm">
-                        <thead id="matrixTableHead" class="bg-vhs-royal text-white text-xs uppercase">
-                            <!-- Généré dynamiquement -->
-                        </thead>
-                        <tbody id="matrixTableBody" class="divide-y divide-slate-100">
-                            <!-- Généré dynamiquement -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- ========================================================= -->
-        <!-- VUE 3 : GESTION DE L'EFFECTIF (JOUEURS)                   -->
-        <!-- ========================================================= -->
-        <section id="view-roster" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-                    <div>
-                        <h2 class="text-lg sm:text-xl font-extrabold text-vhs-deep flex items-center gap-2">
-                            <i data-lucide="shirt" class="w-5 h-5 text-vhs-royal"></i>
-                            Effectif Vence Handball Sport (VHS)
-                        </h2>
-                        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Liste officielle des joueurs de l'équipe (ajout et suppression réservés au Mode Coach).</p>
-                    </div>
-                    <div id="rosterCoachActions" class="hidden items-center gap-2">
-                        <button onclick="requestResetDemoData()" class="text-xs font-semibold text-slate-500 hover:text-slate-800 px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition cursor-pointer">
-                            Restaurer données VHS
-                        </button>
-                        <button onclick="openModal('playerModal')" class="flex items-center gap-1.5 bg-vhs-royal hover:bg-vhs-deep text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl shadow-sm transition cursor-pointer">
-                            <i data-lucide="user-plus" class="w-4 h-4 text-vhs-gold"></i>
-                            <span>Ajouter un joueur</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div id="rosterGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                    <!-- Généré dynamiquement par JS -->
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- PIED DE PAGE -->
-    <footer class="bg-white border-t border-slate-200 py-4 px-4 mt-auto">
-        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
-            <div class="font-bold text-vhs-royal">Vence Handball Sport (VHS) • Bleu &amp; Or</div>
-            <div>Sauvegarde automatique locale activée sur cet appareil</div>
-        </div>
-    </footer>
-
-    <!-- ========================================================= -->
-    <!-- MODALE 1 : AJOUTER UNE SÉANCE OU UN MATCH                 -->
-    <!-- ========================================================= -->
-    <div id="eventModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100">
-            <div class="bg-vhs-royal text-white px-5 py-4 flex items-center justify-between border-b-2 border-vhs-gold">
-                <h3 class="font-extrabold text-base flex items-center gap-2">
-                    <i data-lucide="calendar-plus" class="w-5 h-5 text-vhs-gold"></i>
-                    Nouvel Événement VHS
-                </h3>
-                <button onclick="closeModal('eventModal')" class="text-blue-100 hover:text-white p-1 rounded-lg cursor-pointer">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <form onsubmit="handleAddEvent(event)" class="p-5 space-y-4">
-                <!-- Type d'événement -->
-                <div>
-                    <label class="block text-xs font-bold uppercase text-slate-600 mb-2">Type d'événement</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-vhs-royal has-checked:border-vhs-royal has-checked:bg-blue-50/50 transition">
-                            <input type="radio" name="eventType" value="training" checked onchange="onEventTypeOrDateChange()" class="text-vhs-royal focus:ring-vhs-royal">
-                            <span class="text-xs font-extrabold text-vhs-deep">Entraînement</span>
-                        </label>
-                        <label class="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-vhs-royal has-checked:border-vhs-royal has-checked:bg-blue-50/50 transition">
-                            <input type="radio" name="eventType" value="match" onchange="onEventTypeOrDateChange()" class="text-vhs-royal focus:ring-vhs-royal">
-                            <span class="text-xs font-extrabold text-vhs-deep">Match</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Raccourcis horaires fixes VHS -->
-                <div id="regularPresetBar" class="p-2.5 bg-vhs-goldLight/70 rounded-xl border border-vhs-gold/60 text-xs">
-                    <span class="font-bold text-vhs-deep block mb-1">Horaires habituels VHS :</span>
-                    <div class="flex flex-wrap gap-1.5">
-                        <button type="button" onclick="fillPresetTraining(1)" class="bg-white hover:bg-amber-50 text-vhs-royal font-bold px-2 py-1 rounded-lg border border-vhs-gold/50 transition cursor-pointer">
-                            Lundi (18h15 - 19h30)
-                        </button>
-                        <button type="button" onclick="fillPresetTraining(3)" class="bg-white hover:bg-amber-50 text-vhs-royal font-bold px-2 py-1 rounded-lg border border-vhs-gold/50 transition cursor-pointer">
-                            Mercredi (16h30 - 18h00)
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Titre -->
-                <div>
-                    <label for="eventTitle" class="block text-xs font-bold uppercase text-slate-600 mb-1">Titre de l'événement</label>
-                    <input type="text" id="eventTitle" required placeholder="ex: Entraînement Lundi ou Match vs Nice" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-vhs-royal">
-                </div>
-
-                <!-- Date -->
-                <div>
-                    <label for="eventDate" class="block text-xs font-bold uppercase text-slate-600 mb-1">Date</label>
-                    <input type="date" id="eventDate" required onchange="onEventTypeOrDateChange()" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-vhs-royal">
-                </div>
-
-                <!-- Horaires -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label for="eventTime" class="block text-xs font-bold uppercase text-slate-600 mb-1">Heure de début</label>
-                        <input type="time" id="eventTime" required class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-vhs-royal">
-                    </div>
-                    <div>
-                        <label for="eventEndTime" class="block text-xs font-bold uppercase text-slate-600 mb-1">Heure de fin</label>
-                        <input type="time" id="eventEndTime" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-vhs-royal">
-                    </div>
-                </div>
-
-                <!-- Lieu -->
-                <div>
-                    <label for="eventLocation" class="block text-xs font-bold uppercase text-slate-600 mb-1">Lieu</label>
-                    <input type="text" id="eventLocation" value="Gymnase Dandreis, Vence" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-vhs-royal">
-                </div>
-
-                <div class="flex items-center justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('eventModal')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer">Annuler</button>
-                    <button type="submit" class="px-4 py-2 text-xs font-extrabold text-vhs-deep bg-vhs-gold hover:bg-vhs-goldDark rounded-xl shadow-sm cursor-pointer">Ajouter</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ========================================================= -->
-    <!-- MODALE 2 : AJOUTER UN JOUEUR À L'EFFECTIF                 -->
-    <!-- ========================================================= -->
-    <div id="playerModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-100">
-            <div class="bg-vhs-royal text-white px-5 py-4 flex items-center justify-between border-b-2 border-vhs-gold">
-                <h3 class="font-extrabold text-base flex items-center gap-2">
-                    <i data-lucide="user-plus" class="w-5 h-5 text-vhs-gold"></i>
-                    Ajouter un Joueur VHS
-                </h3>
-                <button onclick="closeModal('playerModal')" class="text-blue-100 hover:text-white p-1 rounded-lg cursor-pointer">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <form onsubmit="handleAddPlayer(event)" class="p-5 space-y-4">
-                <div>
-                    <label for="playerName" class="block text-xs font-bold uppercase text-slate-600 mb-1">Prénom &amp; Nom</label>
-                    <input type="text" id="playerName" required placeholder="ex: Lucas" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-vhs-royal">
-                </div>
-                <div>
-                    <label for="playerNumber" class="block text-xs font-bold uppercase text-slate-600 mb-1">Numéro de maillot (optionnel)</label>
-                    <input type="text" maxlength="3" id="playerNumber" placeholder="ex: 14" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-vhs-royal">
-                </div>
-                <div>
-                    <label for="playerRole" class="block text-xs font-bold uppercase text-slate-600 mb-1">Rôle / Poste</label>
-                    <select id="playerRole" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-vhs-royal">
-                        <option value="Joueur">Joueur</option>
-                        <option value="Gardien">Gardien</option>
-                        <option value="Capitaine">Capitaine</option>
-                    </select>
-                </div>
-                <div class="flex items-center justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('playerModal')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer">Annuler</button>
-                    <button type="submit" class="px-4 py-2 text-xs font-extrabold text-white bg-vhs-royal hover:bg-vhs-deep rounded-xl shadow-sm cursor-pointer">Ajouter le joueur</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ========================================================= -->
-    <!-- MODALE 3 : AJOUTER UNE NOTE / COMMENTAIRE                 -->
-    <!-- ========================================================= -->
-    <div id="noteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-100">
-            <div class="bg-vhs-royal text-white px-5 py-4 flex items-center justify-between border-b-2 border-vhs-gold">
-                <h3 class="font-extrabold text-base flex items-center gap-2">
-                    <i data-lucide="message-square" class="w-5 h-5 text-vhs-gold"></i>
-                    Précision pour <span id="notePlayerName" class="text-vhs-gold"></span>
-                </h3>
-                <button onclick="closeModal('noteModal')" class="text-blue-100 hover:text-white p-1 rounded-lg cursor-pointer">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <form onsubmit="handleSaveNote(event)" class="p-5 space-y-4">
-                <input type="hidden" id="notePlayerId">
-                <div>
-                    <label for="noteInput" class="block text-xs font-bold uppercase text-slate-600 mb-1">Motif / Commentaire</label>
-                    <input type="text" id="noteInput" placeholder="ex: En retard 15 min, Blessé, etc." class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-vhs-royal">
-                </div>
-                <div class="flex flex-wrap gap-1.5">
-                    <button type="button" onclick="setQuickNote('En retard')" class="text-[11px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg transition cursor-pointer">⏱️ En retard</button>
-                    <button type="button" onclick="setQuickNote('Blessé')" class="text-[11px] font-bold bg-red-50 hover:bg-red-100 text-red-700 px-2.5 py-1 rounded-lg transition cursor-pointer">🩹 Blessé</button>
-                    <button type="button" onclick="setQuickNote('Excusé')" class="text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-vhs-royal px-2.5 py-1 rounded-lg transition cursor-pointer">📝 Excusé</button>
-                </div>
-                <div class="flex items-center justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('noteModal')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer">Annuler</button>
-                    <button type="submit" class="px-4 py-2 text-xs font-extrabold text-white bg-vhs-royal hover:bg-vhs-deep rounded-xl shadow-sm cursor-pointer">Enregistrer</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ========================================================= -->
-    <!-- MODALE 4 : CONFIRMATION GÉNÉRIQUE                         -->
-    <!-- ========================================================= -->
-    <div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-100">
-            <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between border-b-2 border-vhs-gold">
-                <h3 id="confirmTitle" class="font-extrabold text-base">Confirmation</h3>
-                <button onclick="closeModal('confirmModal')" class="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <div class="p-5 space-y-4">
-                <p id="confirmMessage" class="text-xs sm:text-sm text-slate-600 leading-relaxed"></p>
-                <div class="flex items-center justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('confirmModal')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer">Annuler</button>
-                    <button type="button" id="confirmActionBtn" class="px-4 py-2 text-xs font-extrabold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-sm cursor-pointer">Confirmer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ========================================================= -->
-    <!-- MODALE 5 : ACCÈS MODE COACH (CODE PIN)                   -->
-    <!-- ========================================================= -->
-    <div id="coachPinModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-100">
-            <div class="bg-vhs-royal text-white px-5 py-4 flex items-center justify-between border-b-2 border-vhs-gold">
-                <h3 class="font-extrabold text-base flex items-center gap-2">
-                    <i data-lucide="shield-check" class="w-5 h-5 text-vhs-gold"></i>
-                    Accès Mode Coach VHS
-                </h3>
-                <button onclick="closeModal('coachPinModal')" class="text-blue-100 hover:text-white p-1 rounded-lg cursor-pointer">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <form onsubmit="handleCoachPinSubmit(event)" class="p-5 space-y-4">
-                <p class="text-xs text-slate-600 leading-relaxed">
-                    Le <strong>Mode Coach</strong> permet de sélectionner les joueurs convoqués aux matchs, et d'ajouter ou supprimer des séances et des joueurs.
-                </p>
-                <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <label for="coachPinInput" class="block text-xs font-bold uppercase text-slate-600">Code PIN Coach</label>
-                        <span class="text-[11px] font-semibold text-vhs-royal bg-blue-50 px-2 py-0.5 rounded-md">Code démo : 1234</span>
-                    </div>
-                    <input type="password" inputmode="numeric" maxlength="6" id="coachPinInput" placeholder="••••" class="w-full px-3.5 py-2.5 text-center tracking-widest font-extrabold text-lg border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-vhs-royal">
-                    <p id="coachPinError" class="hidden text-xs font-bold text-red-600 mt-1.5">Code PIN incorrect (essayez 1234).</p>
-                </div>
-                <div class="flex items-center justify-between gap-2 pt-1">
-                    <button type="button" onclick="activateCoachModeDirect()" class="text-xs font-bold text-vhs-royal hover:underline cursor-pointer">
-                        Accès direct (1 clic)
-                    </button>
-                    <div class="flex gap-2">
-                        <button type="button" onclick="closeModal('coachPinModal')" class="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer">Annuler</button>
-                        <button type="submit" class="px-4 py-2 text-xs font-extrabold text-vhs-deep bg-vhs-gold hover:bg-vhs-goldDark rounded-xl shadow-sm cursor-pointer">Activer Coach</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
+// ... existing code ... -->
     <!-- ========================================================= -->
     <!-- SCRIPT JAVASCRIPT COMPLET                                 -->
     <!-- ========================================================= -->
     <script>
-        // Clé de stockage localStorage mise à jour pour Vence Handball Sport
         const STORAGE_KEY = 'vhs_handball_sport_v3';
-        const COACH_PIN_CODE = '06140'; // <-- Pinkode ændret til 06140
+        const COACH_PIN_CODE = '06140';
 
-        // Horaires officiels d'entraînement VHS :
-        // Lundi (dayOfWeek = 1) : 18:15 - 19:30
-        // Mercredi (dayOfWeek = 3) : 16:30 - 18:00
         const REGULAR_SCHEDULES = {
             1: { dayName: 'Lundi', start: '18:15', end: '19:30', title: 'Entraînement Lundi' },
             3: { dayName: 'Mercredi', start: '16:30', end: '18:00', title: 'Entraînement Mercredi' }
         };
 
-        // Effectif officiel pré-rempli
         const DEFAULT_PLAYERS = [
             { id: 'p1', name: 'Inès', number: '', role: 'Joueur' },
             { id: 'p2', name: 'Romeo', number: '', role: 'Joueur' },
@@ -693,8 +59,6 @@
             { id: 'p14', name: 'Felix', number: '', role: 'Joueur' }
         ];
 
-        // Événements pré-remplis avec les vrais horaires de Vence Handball Sport
-        // Pour les matchs, 'selectedPlayerIds' contient la liste des joueurs convoqués par le coach
         function getDefaultEvents() {
             return [
                 {
@@ -746,7 +110,6 @@
             ];
         }
 
-        // État global de l'application
         let appState = {
             players: [],
             events: [],
@@ -754,40 +117,40 @@
             selectedEventId: null,
             eventFilter: 'all',
             activeTab: 'attendance',
-            userRole: 'player', // 'player' (Joueur/Parent par défaut) ou 'coach' (Entraîneur)
+            userRole: 'player',
             showNonSelectedInMatch: true
         };
 
-        // Variables Firebase globales
         let db = null;
         let auth = null;
         let unsubscribeFirestore = null;
         let isSyncingFromRemote = false;
 
-        // Initialisation au chargement
+        // Démarrage garanti au chargement avec fallback local immédiat
         window.addEventListener('DOMContentLoaded', () => {
-            loadStateLocallyFirst();
-            // Initialiser Firebase si le module est déjà prêt, sinon le module l'appellera
+            try {
+                loadStateLocallyFirst();
+            } catch (err) {
+                console.error("Erreur critique au démarrage:", err);
+                initDefaultState();
+                renderAll();
+            }
+
             if (window.firebaseModules) {
                 initFirebaseApp();
             }
         });
 
         function loadStateLocallyFirst() {
-            try {
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    appState.players = parsed.players || [...DEFAULT_PLAYERS];
-                    appState.events = parsed.events || getDefaultEvents();
-                    appState.attendance = parsed.attendance || {};
-                    appState.selectedEventId = parsed.selectedEventId || (appState.events[0] ? appState.events[0].id : null);
-                    appState.userRole = parsed.userRole || 'player';
-                } else {
-                    initDefaultState();
-                }
-            } catch (e) {
-                console.error('Erreur lecture localStorage:', e);
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                appState.players = parsed.players || [...DEFAULT_PLAYERS];
+                appState.events = parsed.events || getDefaultEvents();
+                appState.attendance = parsed.attendance || {};
+                appState.selectedEventId = parsed.selectedEventId || (appState.events[0] ? appState.events[0].id : null);
+                appState.userRole = parsed.userRole || 'player';
+            } else {
                 initDefaultState();
             }
             ensureValidEventsState();
@@ -818,33 +181,13 @@
                     'p3': { status: 'present', note: '' },
                     'p4': { status: 'absent', note: 'Excusé' },
                     'p5': { status: 'present', note: '' },
-                    'p6': { status: 'present', note: 'En retard 10 min' },
-                    'p7': { status: 'present', note: '' },
-                    'p8': { status: 'pending', note: '' },
-                    'p9': { status: 'present', note: '' },
-                    'p10': { status: 'present', note: '' },
-                    'p11': { status: 'absent', note: '' },
-                    'p12': { status: 'present', note: '' },
-                    'p13': { status: 'present', note: '' },
-                    'p14': { status: 'pending', note: '' }
-                };
-            }
-            const matchEvent = appState.events.find(e => e.type === 'match');
-            if (matchEvent) {
-                appState.attendance[matchEvent.id] = {
-                    'p1': { status: 'present', note: '' },
-                    'p2': { status: 'present', note: '' },
-                    'p5': { status: 'present', note: 'Covoiturage OK' },
-                    'p7': { status: 'absent', note: 'Indisponible ce week-end' }
+                    'p6': { status: 'present', note: 'En retard 10 min' }
                 };
             }
             appState.selectedEventId = appState.events[0].id;
             saveStateLocally();
         }
 
-        // =========================================================
-        // CONNEXION FIREBASE ET SYNCHRONISATION LIVE (RÈGLE 1, 2, 3)
-        // =========================================================
         window.initFirebaseApp = async function() {
             if (!window.firebaseModules) return;
             try {
@@ -859,7 +202,6 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                // Règle 3 : Auth avant requêtes
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
@@ -868,17 +210,14 @@
 
                 if (!auth.currentUser) return;
 
-                // Correction Firestore : Utilisation du chemin public autorisé par l'environnement ({appId}/public/vhs_team_data)
                 const docRef = doc(db, 'artifacts', appId, 'public', 'vhs_team_data');
 
-                // Écoute en temps réel avec callback d'erreur
                 if (unsubscribeFirestore) unsubscribeFirestore();
 
                 unsubscribeFirestore = onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const remoteData = docSnap.data();
                         if (remoteData && remoteData.updatedAt) {
-                            // Éviter les boucles de sauvegarde locale si la donnée vient du cloud
                             isSyncingFromRemote = true;
                             appState.players = remoteData.players || appState.players;
                             appState.events = remoteData.events || appState.events;
@@ -892,15 +231,14 @@
                             isSyncingFromRemote = false;
                         }
                     } else {
-                        // Premier démarrage cloud : initialiser avec les données locales
                         saveStateToCloud();
                     }
                 }, (error) => {
-                    console.error("Erreur de synchronisation Cloud (Firestore):", error);
+                    console.error("Firestore sync error:", error);
                 });
 
             } catch (e) {
-                console.error("Erreur d'initialisation Firebase:", e);
+                console.warn("Firebase non disponible, fonctionnement en mode local autonome:", e);
             }
         };
 
@@ -914,16 +252,13 @@
                     userRole: appState.userRole
                 }));
             } catch (e) {
-                console.error('Erreur sauvegarde localStorage:', e);
+                console.error('localStorage error:', e);
             }
         }
 
         async function saveStateToCloud() {
-            if (isSyncingFromRemote || !db || !auth || !auth.currentUser) {
-                saveStateLocally();
-                return;
-            }
             saveStateLocally();
+            if (isSyncingFromRemote || !db || !auth || !auth.currentUser) return;
             try {
                 const appId = typeof __app_id !== 'undefined' ? __app_id : 'vhs-handball-sport-default';
                 const docRef = window.firebaseModules.doc(db, 'artifacts', appId, 'public', 'vhs_team_data');
@@ -934,7 +269,7 @@
                     updatedAt: Date.now()
                 });
             } catch (e) {
-                console.error("Erreur d'écriture Cloud:", e);
+                console.error("Cloud save error:", e);
             }
         }
 
@@ -942,9 +277,6 @@
             saveStateToCloud();
         }
 
-        // =========================================================
-        // GESTION DES RÔLES (MODE JOUEUR/PARENT VS MODE COACH)
-        // =========================================================
         function isCoach() {
             return appState.userRole === 'coach';
         }
@@ -953,11 +285,7 @@
             appState.userRole = role;
             saveState();
             renderAll();
-            if (role === 'coach') {
-                showToast('Mode Coach activé : vous pouvez gérer les convocations et séances.');
-            } else {
-                showToast('Mode Joueur / Parent activé.');
-            }
+            showToast(role === 'coach' ? 'Mode Coach activé' : 'Mode Joueur / Parent activé');
         }
 
         function requestCoachMode() {
@@ -993,43 +321,22 @@
             const rosterCoachActions = document.getElementById('rosterCoachActions');
 
             if (isCoach()) {
-                btnCoach.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer bg-vhs-gold text-vhs-deep shadow-xs';
-                btnPlayer.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer text-blue-100 hover:text-white';
-
-                coachHeaderActions.classList.remove('hidden');
-                coachHeaderActions.classList.add('flex');
-
-                coachQuickScheduleBtns.classList.remove('hidden');
-                coachQuickScheduleBtns.classList.add('flex');
-
-                playerModeBannerHint.classList.add('hidden');
-
-                if (rosterCoachActions) {
-                    rosterCoachActions.classList.remove('hidden');
-                    rosterCoachActions.classList.add('flex');
-                }
+                if (btnCoach) btnCoach.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer bg-vhs-gold text-vhs-deep shadow-xs';
+                if (btnPlayer) btnPlayer.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer text-blue-100 hover:text-white';
+                if (coachHeaderActions) { coachHeaderActions.classList.remove('hidden'); coachHeaderActions.classList.add('flex'); }
+                if (coachQuickScheduleBtns) { coachQuickScheduleBtns.classList.remove('hidden'); coachQuickScheduleBtns.classList.add('flex'); }
+                if (playerModeBannerHint) playerModeBannerHint.classList.add('hidden');
+                if (rosterCoachActions) { rosterCoachActions.classList.remove('hidden'); rosterCoachActions.classList.add('flex'); }
             } else {
-                btnPlayer.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer bg-white text-vhs-deep shadow-xs';
-                btnCoach.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer text-blue-100 hover:text-white';
-
-                coachHeaderActions.classList.add('hidden');
-                coachHeaderActions.classList.remove('flex');
-
-                coachQuickScheduleBtns.classList.add('hidden');
-                coachQuickScheduleBtns.classList.remove('flex');
-
-                playerModeBannerHint.classList.remove('hidden');
-
-                if (rosterCoachActions) {
-                    rosterCoachActions.classList.add('hidden');
-                    rosterCoachActions.classList.remove('flex');
-                }
+                if (btnPlayer) btnPlayer.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer bg-white text-vhs-deep shadow-xs';
+                if (btnCoach) btnCoach.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer text-blue-100 hover:text-white';
+                if (coachHeaderActions) { coachHeaderActions.classList.add('hidden'); coachHeaderActions.classList.remove('flex'); }
+                if (coachQuickScheduleBtns) { coachQuickScheduleBtns.classList.add('hidden'); coachQuickScheduleBtns.classList.remove('flex'); }
+                if (playerModeBannerHint) playerModeBannerHint.classList.remove('hidden');
+                if (rosterCoachActions) { rosterCoachActions.classList.add('hidden'); rosterCoachActions.classList.remove('flex'); }
             }
         }
 
-        // =========================================================
-        // GESTION DES CONVOCATIONS POUR LES MATCHS (COACH UNIQUEMENT)
-        // =========================================================
         function isPlayerConvokedForMatch(ev, playerId) {
             if (!ev || ev.type !== 'match') return true;
             const list = Array.isArray(ev.selectedPlayerIds) ? ev.selectedPlayerIds : [];
@@ -1041,16 +348,10 @@
             const ev = appState.events.find(e => e.id === appState.selectedEventId);
             if (!ev || ev.type !== 'match') return;
 
-            if (!Array.isArray(ev.selectedPlayerIds)) {
-                ev.selectedPlayerIds = [];
-            }
-
+            if (!Array.isArray(ev.selectedPlayerIds)) ev.selectedPlayerIds = [];
             const idx = ev.selectedPlayerIds.indexOf(playerId);
-            if (idx === -1) {
-                ev.selectedPlayerIds.push(playerId);
-            } else {
-                ev.selectedPlayerIds.splice(idx, 1);
-            }
+            if (idx === -1) ev.selectedPlayerIds.push(playerId);
+            else ev.selectedPlayerIds.splice(idx, 1);
 
             saveState();
             renderEventSelector();
@@ -1068,7 +369,7 @@
             renderEventSelector();
             renderActiveEvent();
             renderMatrix();
-            showToast(selectAll ? 'Tous les joueurs ont été convoqués' : 'Sélection des convoqués vidée');
+            showToast(selectAll ? 'Tous les joueurs convoqués' : 'Sélection vidée');
         }
 
         function toggleShowNonSelected() {
@@ -1076,43 +377,29 @@
             renderAttendanceList();
         }
 
-        // Formatage date française (ex: "Lun. 16 nov.")
         function formatFrenchDate(dateStr) {
             if (!dateStr) return '';
             try {
                 const [y, m, d] = dateStr.split('-').map(Number);
-                const dateObj = new Date(y, m - 1, d);
-                return dateObj.toLocaleDateString('fr-FR', {
-                    weekday: 'short',
-                    day: 'numeric',
-                    month: 'short'
-                });
+                return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
             } catch {
                 return dateStr;
             }
         }
 
-        // Formatage créneau horaire (ex: "18h15 - 19h30")
         function formatTimeSlot(start, end) {
             const s = (start || '').replace(':', 'h');
             if (!end) return s;
-            const e = end.replace(':', 'h');
-            return `${s} – ${e}`;
+            return `${s} – ${end.replace(':', 'h')}`;
         }
 
-        // Calculer la prochaine date correspondant à un jour de la semaine (1 = Lundi, 3 = Mercredi)
         function getNextWeekdayDateStr(targetDayOfWeek, fromDate = new Date()) {
             const d = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
             const currentDay = d.getDay();
             let diff = targetDayOfWeek - currentDay;
             if (diff < 0) diff += 7;
             d.setDate(d.getDate() + diff);
-            let iso = toLocalISODate(d);
-            while (appState.events.some(ev => ev.type === 'training' && ev.date === iso)) {
-                d.setDate(d.getDate() + 7);
-                iso = toLocalISODate(d);
-            }
-            return iso;
+            return toLocalISODate(d);
         }
 
         function toLocalISODate(dateObj) {
@@ -1122,12 +409,10 @@
             return `${y}-${m}-${d}`;
         }
 
-        // Ajout rapide en 1 clic depuis le bandeau supérieur (Prochain Lundi ou Prochain Mercredi)
         function quickAddNextRegularTraining(dayOfWeek) {
             if (!isCoach()) return;
             const sched = REGULAR_SCHEDULES[dayOfWeek];
             if (!sched) return;
-
             const nextDate = getNextWeekdayDateStr(dayOfWeek);
             const newEvent = {
                 id: 'ev_' + Date.now(),
@@ -1138,22 +423,18 @@
                 endTime: sched.end,
                 location: 'Gymnase Dandreis, Vence'
             };
-
             appState.events.push(newEvent);
             appState.events.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
             appState.selectedEventId = newEvent.id;
-
             saveState();
             switchMainTab('attendance');
-            showToast(`${sched.title} ajouté (${formatFrenchDate(nextDate)} • ${formatTimeSlot(sched.start, sched.end)})`);
+            showToast(`${sched.title} ajouté`);
         }
 
-        // Générer automatiquement les entraînements des 4 prochaines semaines (Lundis + Mercredis)
         function generateNextFourWeeksTrainings() {
             if (!isCoach()) return;
             const baseDate = new Date();
             let addedCount = 0;
-
             for (let i = 0; i < 28; i++) {
                 const d = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate() + i);
                 const dow = d.getDay();
@@ -1175,28 +456,24 @@
                     }
                 }
             }
-
             if (addedCount > 0) {
                 appState.events.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
                 saveState();
                 renderAll();
-                showToast(`${addedCount} entraînement(s) ajouté(s) sur les 4 prochaines semaines !`);
+                showToast(`${addedCount} entraînements ajoutés !`);
             } else {
-                showToast('Tous les entraînements des 4 prochaines semaines sont déjà planifiés.');
+                showToast('Entraînements déjà planifiés.');
             }
         }
 
-        // Ouvrir la modale d'événement avec suggestion automatique des horaires VHS
         function openEventModal() {
             if (!isCoach()) return;
-            const nextMon = getNextWeekdayDateStr(1);
-            document.getElementById('eventDate').value = nextMon;
+            document.getElementById('eventDate').value = getNextWeekdayDateStr(1);
             document.querySelector('input[name="eventType"][value="training"]').checked = true;
             onEventTypeOrDateChange();
             openModal('eventModal');
         }
 
-        // Suggestion automatique des horaires selon le jour choisi (Lundi 18h15-19h30, Mercredi 16h30-18h00)
         function onEventTypeOrDateChange() {
             const type = document.querySelector('input[name="eventType"]:checked').value;
             const dateVal = document.getElementById('eventDate').value;
@@ -1214,62 +491,51 @@
                         const sched = REGULAR_SCHEDULES[dow];
                         startInput.value = sched.start;
                         endInput.value = sched.end;
-                        if (!titleInput.value || titleInput.value.startsWith('Entraînement')) {
-                            titleInput.value = sched.title;
-                        }
+                        if (!titleInput.value || titleInput.value.startsWith('Entraînement')) titleInput.value = sched.title;
                     }
                 }
             } else {
                 presetBar.classList.add('hidden');
-                if (titleInput.value.startsWith('Entraînement')) {
-                    titleInput.value = '';
-                }
+                if (titleInput.value.startsWith('Entraînement')) titleInput.value = '';
             }
         }
 
         function fillPresetTraining(dayOfWeek) {
             const sched = REGULAR_SCHEDULES[dayOfWeek];
             if (!sched) return;
-            const nextDate = getNextWeekdayDateStr(dayOfWeek);
             document.querySelector('input[name="eventType"][value="training"]').checked = true;
-            document.getElementById('eventDate').value = nextDate;
+            document.getElementById('eventDate').value = getNextWeekdayDateStr(dayOfWeek);
             document.getElementById('eventTitle').value = sched.title;
             document.getElementById('eventTime').value = sched.start;
             document.getElementById('eventEndTime').value = sched.end;
             document.getElementById('eventLocation').value = 'Gymnase Dandreis, Vence';
         }
 
-        // Récupérer le statut d'un joueur pour un événement donné
         function getPlayerAttendance(eventId, playerId) {
-            if (!appState.attendance[eventId]) {
-                appState.attendance[eventId] = {};
-            }
-            if (!appState.attendance[eventId][playerId]) {
-                appState.attendance[eventId][playerId] = { status: 'pending', note: '' };
-            }
+            if (!appState.attendance[eventId]) appState.attendance[eventId] = {};
+            if (!appState.attendance[eventId][playerId]) appState.attendance[eventId][playerId] = { status: 'pending', note: '' };
             return appState.attendance[eventId][playerId];
         }
 
-        // Rendu global
         function renderAll() {
-            document.getElementById('headerPlayerCount').textContent = appState.players.length;
+            const countEl = document.getElementById('headerPlayerCount');
+            if (countEl) countEl.textContent = appState.players.length;
             updateRoleUI();
             renderEventSelector();
             renderActiveEvent();
             renderMatrix();
             renderRoster();
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
         }
 
-        // =========================================================
-        // NAVIGATION PAR ONGLETS PRINCIPAUX
-        // =========================================================
         function switchMainTab(tabName) {
             appState.activeTab = tabName;
-            const tabs = ['attendance', 'matrix', 'roster'];
-            tabs.forEach(t => {
+            ['attendance', 'matrix', 'roster'].forEach(t => {
                 const view = document.getElementById(`view-${t}`);
                 const nav = document.getElementById(`nav-${t}`);
+                if (!view || !nav) return;
                 if (t === tabName) {
                     view.classList.remove('hidden');
                     nav.classList.add('border-vhs-gold', 'text-white', 'font-extrabold');
@@ -1283,82 +549,50 @@
             renderAll();
         }
 
-        // =========================================================
-        // VUE 1 : SÉLECTEUR D'ÉVÉNEMENTS & POINTAGE
-        // =========================================================
         function setEventFilter(filter) {
             appState.eventFilter = filter;
             ['all', 'training', 'match'].forEach(f => {
                 const btn = document.getElementById(`filter-${f}`);
-                if (f === filter) {
-                    btn.className = 'text-xs font-bold px-2.5 py-1 rounded-lg bg-vhs-royal text-white transition cursor-pointer';
-                } else {
-                    btn.className = 'text-xs font-semibold px-2.5 py-1 rounded-lg bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition cursor-pointer';
-                }
+                if (!btn) return;
+                if (f === filter) btn.className = 'text-xs font-bold px-2.5 py-1 rounded-lg bg-vhs-royal text-white transition cursor-pointer';
+                else btn.className = 'text-xs font-semibold px-2.5 py-1 rounded-lg bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition cursor-pointer';
             });
             renderEventSelector();
         }
 
         function renderEventSelector() {
             const container = document.getElementById('eventSelectorList');
-            const filteredEvents = appState.events.filter(ev => {
-                if (appState.eventFilter === 'all') return true;
-                return ev.type === appState.eventFilter;
-            });
+            if (!container) return;
+            const filteredEvents = appState.events.filter(ev => appState.eventFilter === 'all' || ev.type === appState.eventFilter);
 
             if (filteredEvents.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full bg-white border border-dashed border-slate-300 rounded-2xl p-6 text-center text-slate-500 text-sm">
-                        Aucun événement dans cette catégorie.
-                    </div>
-                `;
+                container.innerHTML = `<div class="col-span-full bg-white border border-dashed border-slate-300 rounded-2xl p-6 text-center text-slate-500 text-sm">Aucun événement.</div>`;
                 return;
             }
 
             container.innerHTML = filteredEvents.map(ev => {
                 const isSelected = ev.id === appState.selectedEventId;
                 const isMatch = ev.type === 'match';
-                
-                const targetPlayers = isMatch
-                    ? appState.players.filter(p => isPlayerConvokedForMatch(ev, p.id))
-                    : appState.players;
-
+                const targetPlayers = isMatch ? appState.players.filter(p => isPlayerConvokedForMatch(ev, p.id)) : appState.players;
                 let presentCount = 0;
-                targetPlayers.forEach(p => {
-                    if (getPlayerAttendance(ev.id, p.id).status === 'present') presentCount++;
-                });
+                targetPlayers.forEach(p => { if (getPlayerAttendance(ev.id, p.id).status === 'present') presentCount++; });
 
-                const borderClass = isSelected
-                    ? (isMatch ? 'border-vhs-goldDark ring-2 ring-vhs-gold/40 bg-white shadow-md' : 'border-vhs-royal ring-2 ring-vhs-royal/20 bg-white shadow-md')
-                    : 'border-slate-200 bg-white/85 hover:bg-white hover:border-slate-300';
-
-                const badgeClass = isMatch
-                    ? 'bg-vhs-goldLight text-vhs-deep border border-vhs-goldDark/40'
-                    : 'bg-blue-100 text-vhs-royal';
-
-                const countLabel = isMatch
-                    ? `${presentCount}/${targetPlayers.length} conv.`
-                    : `${presentCount}/${targetPlayers.length}`;
+                const borderClass = isSelected ? 'border-vhs-royal ring-2 ring-vhs-royal/20 bg-white shadow-md' : 'border-slate-200 bg-white/85 hover:bg-white';
+                const badgeClass = isMatch ? 'bg-vhs-goldLight text-vhs-deep border border-vhs-goldDark/40' : 'bg-blue-100 text-vhs-royal';
 
                 return `
                     <button onclick="selectEvent('${ev.id}')" class="text-left p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between gap-2 cursor-pointer ${borderClass}">
                         <div class="flex items-center justify-between w-full gap-2">
-                            <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md ${badgeClass}">
-                                ${isMatch ? '🏆 Match' : '🤾 Entraînement'}
-                            </span>
-                            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                                ${countLabel}
-                            </span>
+                            <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md ${badgeClass}">${isMatch ? '🏆 Match' : '🤾 Entraînement'}</span>
+                            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">${presentCount}/${targetPlayers.length}</span>
                         </div>
                         <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <label for="coachPinInput" class="block text-xs font-bold uppercase text-slate-600">Code PIN Coach</label>
-                        <span class="text-[11px] font-semibold text-vhs-royal bg-blue-50 px-2 py-0.5 rounded-md">Code démo : 06140</span>
-                    </div>
-                    <input type="password" inputmode="numeric" maxlength="6" id="coachPinInput" placeholder="••••" class="w-full px-3.5 py-2.5 text-center tracking-widest font-extrabold text-lg border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-vhs-royal">
-                    <p id="coachPinError" class="hidden text-xs font-bold text-red-600 mt-1.5">Code PIN incorrect (essayez 06140).</p>
-                </div>
-                <div class="flex items-center justify-between gap-2 pt-1">
+                            <div class="font-bold text-sm text-slate-900 truncate">${escapeHtml(ev.title)}</div>
+                            <div class="text-xs text-slate-500">${formatFrenchDate(ev.date)} • ${ev.time}</div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
         }
 
         function selectEvent(eventId) {
@@ -1366,38 +600,34 @@
             saveState();
             renderEventSelector();
             renderActiveEvent();
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function renderActiveEvent() {
             const panel = document.getElementById('activeEventPanel');
+            if (!panel) return;
             const ev = appState.events.find(e => e.id === appState.selectedEventId);
 
             if (!ev) {
-                panel.innerHTML = `
-                    <div class="p-10 text-center space-y-3">
-                        <p class="text-slate-500 font-medium">Aucun entraînement ou match sélectionné.</p>
-                    </div>
-                `;
+                panel.innerHTML = `<div class="p-10 text-center text-slate-500">Aucun événement sélectionné.</div>`;
                 return;
             }
 
             const isMatch = ev.type === 'match';
             const badge = document.getElementById('activeEventBadge');
-            badge.textContent = isMatch ? '🏆 MATCH • CONVOCATIONS' : '🤾 ENTRAÎNEMENT';
-            badge.className = isMatch
-                ? 'text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-vhs-gold text-vhs-deep'
-                : 'text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-blue-100 text-vhs-royal';
+            if (badge) {
+                badge.textContent = isMatch ? '🏆 MATCH • CONVOCATIONS' : '🤾 ENTRAÎNEMENT';
+                badge.className = isMatch ? 'text-xs font-extrabold uppercase px-2.5 py-1 rounded-lg bg-vhs-gold text-vhs-deep' : 'text-xs font-extrabold uppercase px-2.5 py-1 rounded-lg bg-blue-100 text-vhs-royal';
+            }
 
-            document.getElementById('activeEventDate').innerHTML = `
-                <i data-lucide="clock" class="w-4 h-4 text-vhs-royal"></i>
-                <span class="capitalize">${formatFrenchDate(ev.date)}</span> • <strong>${formatTimeSlot(ev.time, ev.endTime)}</strong>
-            `;
-            document.getElementById('activeEventTitle').textContent = ev.title;
-            document.getElementById('activeEventLocation').innerHTML = `
-                <i data-lucide="map-pin" class="w-4 h-4 text-vhs-royal shrink-0"></i>
-                <span>${escapeHtml(ev.location || 'Lieu non précisé')}</span>
-            `;
+            const dateEl = document.getElementById('activeEventDate');
+            if (dateEl) dateEl.innerHTML = `<i data-lucide="clock" class="w-4 h-4 text-vhs-royal"></i> <span class="capitalize">${formatFrenchDate(ev.date)}</span> • <strong>${formatTimeSlot(ev.time, ev.endTime)}</strong>`;
+            
+            const titleEl = document.getElementById('activeEventTitle');
+            if (titleEl) titleEl.textContent = ev.title;
+
+            const locEl = document.getElementById('activeEventLocation');
+            if (locEl) locEl.innerHTML = `<i data-lucide="map-pin" class="w-4 h-4 text-vhs-royal shrink-0"></i> <span>${escapeHtml(ev.location || 'Gymnase Dandreis')}</span>`;
 
             const deleteBtn = document.getElementById('deleteEventBtn');
             if (deleteBtn) {
@@ -1410,7 +640,6 @@
             renderAttendanceList();
         }
 
-        // Panneau spécifique aux matchs : sélection des convoqués en Mode Coach, ou bandeau d'information en Mode Joueur/Parent
         function renderMatchConvocationPanel(ev) {
             const container = document.getElementById('matchConvocationPanel');
             if (!container) return;
@@ -1429,38 +658,20 @@
                 container.innerHTML = `
                     <div class="p-4 sm:px-6 bg-vhs-goldLight/60 space-y-3">
                         <div class="flex flex-wrap items-center justify-between gap-2">
-                            <div class="flex items-center gap-2">
-                                <span class="w-7 h-7 rounded-lg bg-vhs-royal text-vhs-gold flex items-center justify-center">
-                                    <i data-lucide="user-check" class="w-4 h-4"></i>
-                                </span>
-                                <div>
-                                    <h4 class="text-xs sm:text-sm font-black uppercase tracking-wide text-vhs-deep">
-                                        Sélectionner les joueurs convoqués (${convokedCount} / ${appState.players.length})
-                                    </h4>
-                                    <p class="text-[11px] text-slate-600">Seuls les joueurs cochés ci-dessous pourront confirmer leur présence ou absence à ce match.</p>
-                                </div>
+                            <div>
+                                <h4 class="text-xs sm:text-sm font-black uppercase text-vhs-deep">Joueurs convoqués (${convokedCount} / ${appState.players.length})</h4>
+                                <p class="text-[11px] text-slate-600">Cochez les joueurs retenus pour ce match.</p>
                             </div>
                             <div class="flex items-center gap-1.5 text-xs">
-                                <button onclick="setAllMatchConvocations(true)" class="px-2.5 py-1 rounded-lg bg-white hover:bg-blue-50 text-vhs-royal font-bold border border-vhs-royal/30 transition cursor-pointer">
-                                    Tout sélectionner
-                                </button>
-                                <button onclick="setAllMatchConvocations(false)" class="px-2.5 py-1 rounded-lg bg-white hover:bg-red-50 text-red-600 font-bold border border-red-200 transition cursor-pointer">
-                                    Tout vider
-                                </button>
+                                <button onclick="setAllMatchConvocations(true)" class="px-2.5 py-1 rounded-lg bg-white text-vhs-royal font-bold border border-vhs-royal/30 cursor-pointer">Tout cocher</button>
+                                <button onclick="setAllMatchConvocations(false)" class="px-2.5 py-1 rounded-lg bg-white text-red-600 font-bold border border-red-200 cursor-pointer">Tout vider</button>
                             </div>
                         </div>
-
-                        <!-- Grille de puces cliquables pour convoquer les joueurs -->
                         <div class="flex flex-wrap gap-2">
                             ${appState.players.map(p => {
                                 const isConvoked = selectedIds.includes(p.id);
                                 return `
-                                    <button type="button" onclick="toggleMatchConvocation('${p.id}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold border-2 transition cursor-pointer ${
-                                        isConvoked
-                                        ? 'bg-vhs-royal text-white border-vhs-royal shadow-xs'
-                                        : 'bg-white text-slate-600 border-slate-200 hover:border-vhs-royal/50'
-                                    }">
-                                        <i data-lucide="${isConvoked ? 'check-square' : 'square'}" class="w-3.5 h-3.5 ${isConvoked ? 'text-vhs-gold' : 'text-slate-400'}"></i>
+                                    <button type="button" onclick="toggleMatchConvocation('${p.id}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold border-2 cursor-pointer ${isConvoked ? 'bg-vhs-royal text-white border-vhs-royal' : 'bg-white text-slate-600 border-slate-200'}">
                                         <span>${escapeHtml(p.name)}</span>
                                     </button>
                                 `;
@@ -1470,14 +681,9 @@
                 `;
             } else {
                 container.innerHTML = `
-                    <div class="px-4 sm:px-6 py-3 bg-blue-50/80 flex flex-wrap items-center justify-between gap-2 text-xs">
-                        <div class="flex items-center gap-2 text-vhs-deep font-semibold">
-                            <i data-lucide="shield-alert" class="w-4 h-4 text-vhs-royal shrink-0"></i>
-                            <span><strong>${convokedCount} joueur(s) convoqué(s)</strong> par le coach. Seuls les joueurs sélectionnés peuvent répondre ci-dessous.</span>
-                        </div>
-                        <button onclick="requestCoachMode()" class="text-vhs-royal hover:underline font-extrabold cursor-pointer">
-                            Modifier la sélection (Coach) →
-                        </button>
+                    <div class="px-4 sm:px-6 py-3 bg-blue-50 flex items-center justify-between text-xs">
+                        <span class="text-vhs-deep font-semibold"><strong>${convokedCount} joueur(s) convoqué(s)</strong>. Seuls les joueurs sélectionnés peuvent répondre.</span>
+                        <button onclick="requestCoachMode()" class="text-vhs-royal font-extrabold cursor-pointer">Mode Coach →</button>
                     </div>
                 `;
             }
@@ -1486,34 +692,31 @@
         function updateEventStats() {
             const ev = appState.events.find(e => e.id === appState.selectedEventId);
             if (!ev) return;
-
             const isMatch = ev.type === 'match';
-            const relevantPlayers = isMatch
-                ? appState.players.filter(p => isPlayerConvokedForMatch(ev, p.id))
-                : appState.players;
+            const relevantPlayers = isMatch ? appState.players.filter(p => isPlayerConvokedForMatch(ev, p.id)) : appState.players;
 
             let present = 0, absent = 0, pending = 0;
             relevantPlayers.forEach(p => {
-                const record = getPlayerAttendance(ev.id, p.id);
-                if (record.status === 'present') present++;
-                else if (record.status === 'absent') absent++;
+                const rec = getPlayerAttendance(ev.id, p.id);
+                if (rec.status === 'present') present++;
+                else if (rec.status === 'absent') absent++;
                 else pending++;
             });
 
             const total = relevantPlayers.length;
             const rate = total > 0 ? Math.round((present / total) * 100) : 0;
 
-            document.getElementById('statPresent').textContent = present;
-            document.getElementById('statPresentSub').textContent = isMatch ? `Sur ${total} convoqués` : 'Confirmés';
-            document.getElementById('statAbsent').textContent = absent;
-            document.getElementById('statPending').textContent = pending;
-            document.getElementById('statRate').textContent = `${rate}%`;
-            document.getElementById('statRateLabel').textContent = isMatch ? 'Réponses Oui' : 'Taux présence';
-            document.getElementById('statProgressBar').style.width = `${rate}%`;
+            if (document.getElementById('statPresent')) document.getElementById('statPresent').textContent = present;
+            if (document.getElementById('statPresentSub')) document.getElementById('statPresentSub').textContent = isMatch ? `Sur ${total} convoqués` : 'Confirmés';
+            if (document.getElementById('statAbsent')) document.getElementById('statAbsent').textContent = absent;
+            if (document.getElementById('statPending')) document.getElementById('statPending').textContent = pending;
+            if (document.getElementById('statRate')) document.getElementById('statRate').textContent = `${rate}%`;
+            if (document.getElementById('statProgressBar')) document.getElementById('statProgressBar').style.width = `${rate}%`;
         }
 
         function renderAttendanceList() {
             const listContainer = document.getElementById('attendancePlayerList');
+            if (!listContainer) return;
             const ev = appState.events.find(e => e.id === appState.selectedEventId);
             if (!ev) return;
 
@@ -1522,187 +725,81 @@
             const filteredPlayers = appState.players.filter(p => p.name.toLowerCase().includes(query));
 
             if (!isMatch) {
-                // =====================================================
-                // CAS 1 : ENTRAÎNEMENT (Tous les joueurs peuvent répondre)
-                // =====================================================
                 if (filteredPlayers.length === 0) {
-                    listContainer.innerHTML = `<div class="p-8 text-center text-sm text-slate-500">Aucun joueur trouvé.</div>`;
+                    listContainer.innerHTML = `<div class="p-8 text-center text-slate-500">Aucun joueur.</div>`;
                     return;
                 }
                 listContainer.innerHTML = filteredPlayers.map(player => renderInteractivePlayerRow(ev, player, false)).join('');
-                lucide.createIcons();
+                if (typeof lucide !== 'undefined') lucide.createIcons();
                 return;
             }
 
-            // =====================================================
-            // CAS 2 : MATCH (Séparation Convoqués vs Non convoqués)
-            // =====================================================
             const convokedPlayers = filteredPlayers.filter(p => isPlayerConvokedForMatch(ev, p.id));
             const nonConvokedPlayers = filteredPlayers.filter(p => !isPlayerConvokedForMatch(ev, p.id));
 
             let html = '';
-
             if (convokedPlayers.length === 0) {
                 html += `
-                    <div class="p-8 text-center space-y-2.5 bg-amber-50/40">
-                        <div class="w-11 h-11 rounded-2xl bg-vhs-goldLight text-vhs-royal flex items-center justify-center mx-auto border border-vhs-gold/60">
-                            <i data-lucide="hourglass" class="w-5 h-5"></i>
-                        </div>
-                        <p class="text-sm sm:text-base font-extrabold text-vhs-deep">
-                            En attente de la sélection du coach (aucun joueur convoqué pour le moment).
-                        </p>
-                        <p class="text-xs text-slate-500 max-w-md mx-auto">
-                            Dès que l'entraîneur aura sélectionné l'équipe pour ce match, les joueurs convoqués apparaîtront ici pour confirmer leur présence.
-                        </p>
-                        ${!isCoach() ? `
-                            <div class="pt-1">
-                                <button onclick="requestCoachMode()" class="inline-flex items-center gap-1.5 bg-vhs-royal text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs cursor-pointer">
-                                    <i data-lucide="shield-check" class="w-3.5 h-3.5 text-vhs-gold"></i>
-                                    Passer en Mode Coach pour convoquer
-                                </button>
-                            </div>
-                        ` : ''}
+                    <div class="p-8 text-center space-y-2 bg-amber-50/40">
+                        <p class="text-sm font-extrabold text-vhs-deep">Aucun joueur convoqué pour le moment.</p>
+                        <p class="text-xs text-slate-500">Le coach doit sélectionner les joueurs dans le panneau ci-dessus.</p>
                     </div>
                 `;
             } else {
-                html += `
-                    <div class="px-4 sm:px-6 py-2 bg-vhs-royal/5 border-b border-slate-100 flex items-center justify-between">
-                        <span class="text-xs font-black uppercase tracking-wider text-vhs-royal flex items-center gap-1.5">
-                            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
-                            Joueurs convoqués pour ce match (${convokedPlayers.length})
-                        </span>
-                        <span class="text-[11px] font-semibold text-slate-500">Veuillez confirmer votre disponibilité</span>
-                    </div>
-                `;
+                html += `<div class="px-4 py-2 bg-vhs-royal/5 text-xs font-black text-vhs-royal">Joueurs convoqués (${convokedPlayers.length})</div>`;
                 html += convokedPlayers.map(player => renderInteractivePlayerRow(ev, player, true)).join('');
             }
 
-            // Section des joueurs non convoqués (sans boutons de réponse)
             if (nonConvokedPlayers.length > 0) {
                 html += `
-                    <div class="px-4 sm:px-6 py-2.5 bg-slate-100/90 border-t border-b border-slate-200 flex items-center justify-between">
-                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">
-                            Non convoqués pour ce match (${nonConvokedPlayers.length})
-                        </span>
-                        <button onclick="toggleShowNonSelected()" class="text-xs font-bold text-vhs-royal hover:underline cursor-pointer">
-                            ${appState.showNonSelectedInMatch ? 'Masquer' : 'Afficher'}
-                        </button>
+                    <div class="px-4 py-2.5 bg-slate-100 flex items-center justify-between text-xs font-bold text-slate-500 border-t border-slate-200">
+                        <span>Non convoqués (${nonConvokedPlayers.length})</span>
+                        <button onclick="toggleShowNonSelected()" class="text-vhs-royal cursor-pointer">${appState.showNonSelectedInMatch ? 'Masquer' : 'Afficher'}</button>
                     </div>
                 `;
-
                 if (appState.showNonSelectedInMatch) {
-                    html += nonConvokedPlayers.map(player => {
-                        const initials = player.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-                        return `
-                            <div class="px-4 sm:px-6 py-3 bg-slate-50/70 flex items-center justify-between gap-3 opacity-75">
-                                <div class="flex items-center gap-3 min-w-0">
-                                    <div class="w-9 h-9 rounded-xl bg-slate-200 text-slate-500 font-bold text-xs flex items-center justify-center shrink-0">
-                                        ${player.number ? `#${player.number}` : initials}
-                                    </div>
-                                    <div class="min-w-0">
-                                        <span class="font-semibold text-sm text-slate-600 truncate block">${escapeHtml(player.name)}</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    ${isCoach() ? `
-                                        <button onclick="toggleMatchConvocation('${player.id}')" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-white border border-vhs-royal/30 text-vhs-royal hover:bg-blue-50 transition cursor-pointer">
-                                            + Convoquer
-                                        </button>
-                                    ` : ''}
-                                    <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-200/80 text-slate-500 border border-slate-300/60">
-                                        Non convoqué
-                                    </span>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
+                    html += nonConvokedPlayers.map(player => `
+                        <div class="px-4 py-3 bg-slate-50 flex items-center justify-between opacity-75 border-b border-slate-100">
+                            <span class="font-semibold text-sm text-slate-600">${escapeHtml(player.name)}</span>
+                            ${isCoach() ? `<button onclick="toggleMatchConvocation('${player.id}')" class="text-xs font-bold px-2 py-1 bg-white border border-vhs-royal text-vhs-royal rounded-lg cursor-pointer">+ Convoquer</button>` : '<span class="text-xs text-slate-400">Non convoqué</span>'}
+                        </div>
+                    `).join('');
                 }
             }
 
             listContainer.innerHTML = html;
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        // Ligne interactive pour un joueur (Entraînement ou Joueur convoqué à un match)
         function renderInteractivePlayerRow(ev, player, isConvokedMatch) {
             const record = getPlayerAttendance(ev.id, player.id);
             const status = record.status;
             const note = record.note || '';
-
-            let rowBg = 'bg-white hover:bg-slate-50/80';
-            let avatarBg = 'bg-vhs-royal text-vhs-gold';
-            if (status === 'present') {
-                rowBg = 'bg-emerald-50/35 hover:bg-emerald-50/60';
-                avatarBg = 'bg-emerald-600 text-white';
-            } else if (status === 'absent') {
-                rowBg = 'bg-red-50/35 hover:bg-red-50/60';
-                avatarBg = 'bg-red-600 text-white';
-            }
-
             const initials = player.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
+            let rowBg = 'bg-white';
+            if (status === 'present') rowBg = 'bg-emerald-50/40';
+            else if (status === 'absent') rowBg = 'bg-red-50/40';
+
             return `
-                <div class="p-3.5 sm:px-6 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition border-b border-slate-100 last:border-b-0 ${rowBg}">
-                    <!-- Infos Joueur -->
-                    <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-10 h-10 rounded-xl ${avatarBg} font-black text-sm flex items-center justify-center shrink-0 shadow-xs transition-colors">
+                <div class="p-3.5 sm:px-6 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 ${rowBg}">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-vhs-royal text-vhs-gold font-black text-sm flex items-center justify-center shrink-0">
                             ${player.number ? `#${player.number}` : initials}
                         </div>
-                        <div class="min-w-0">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <span class="font-bold text-base text-slate-900 truncate">${escapeHtml(player.name)}</span>
-                                ${isConvokedMatch ? `<span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-vhs-goldLight text-vhs-deep border border-vhs-goldDark/40">Convoqué</span>` : ''}
-                                ${player.role && player.role !== 'Joueur' ? `<span class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">${escapeHtml(player.role)}</span>` : ''}
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-base text-slate-900">${escapeHtml(player.name)}</span>
+                                ${isConvokedMatch ? '<span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-vhs-goldLight text-vhs-deep">Convoqué</span>' : ''}
                             </div>
-                            ${note ? `
-                                <div class="text-xs font-semibold text-vhs-royal flex items-center gap-1 mt-0.5">
-                                    <i data-lucide="message-circle" class="w-3 h-3 shrink-0"></i>
-                                    <span class="truncate">${escapeHtml(note)}</span>
-                                </div>
-                            ` : `<div class="text-xs text-slate-400">${isConvokedMatch ? 'Sélectionné par le coach' : 'Joueur VHS'}</div>`}
+                            ${note ? `<div class="text-xs font-semibold text-vhs-royal">💬 ${escapeHtml(note)}</div>` : ''}
                         </div>
                     </div>
-
-                    <!-- Boutons de statut + Note -->
-                    <div class="flex items-center gap-1.5 sm:gap-2 self-end sm:self-center">
-                        <!-- Présent -->
-                        <button onclick="setPlayerStatus('${player.id}', 'present')" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${
-                            status === 'present'
-                            ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-600/20'
-                            : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-400 hover:text-emerald-700'
-                        }">
-                            <i data-lucide="check" class="w-4 h-4"></i>
-                            <span>Présent</span>
-                        </button>
-
-                        <!-- Absent -->
-                        <button onclick="setPlayerStatus('${player.id}', 'absent')" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${
-                            status === 'absent'
-                            ? 'bg-red-600 text-white shadow-sm ring-2 ring-red-600/20'
-                            : 'bg-white text-slate-600 border border-slate-200 hover:border-red-400 hover:text-red-700'
-                        }">
-                            <i data-lucide="x" class="w-4 h-4"></i>
-                            <span>Absent</span>
-                        </button>
-
-                        <!-- Incertain / En attente -->
-                        <button onclick="setPlayerStatus('${player.id}', 'pending')" title="Incertain / En attente" class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${
-                            status === 'pending'
-                            ? 'bg-vhs-gold text-vhs-deep shadow-sm ring-2 ring-vhs-goldDark/30'
-                            : 'bg-white text-slate-500 border border-slate-200 hover:border-vhs-goldDark hover:text-vhs-deep'
-                        }">
-                            <i data-lucide="help-circle" class="w-4 h-4"></i>
-                            <span class="hidden md:inline">Incertain</span>
-                        </button>
-
-                        <!-- Bouton commentaire -->
-                        <button onclick="openNoteModal('${player.id}')" title="Ajouter une précision" class="p-2 rounded-xl border transition cursor-pointer ${
-                            note
-                            ? 'bg-blue-50 border-vhs-royal text-vhs-royal'
-                            : 'bg-white border-slate-200 text-slate-400 hover:text-vhs-royal hover:border-slate-300'
-                        }">
-                            <i data-lucide="message-square-plus" class="w-4 h-4"></i>
-                        </button>
+                    <div class="flex items-center gap-1.5 self-end sm:self-center">
+                        <button onclick="setPlayerStatus('${player.id}', 'present')" class="px-3 py-2 rounded-xl text-xs font-bold cursor-pointer ${status === 'present' ? 'bg-emerald-600 text-white shadow' : 'bg-white text-slate-600 border border-slate-200'}">Présent</button>
+                        <button onclick="setPlayerStatus('${player.id}', 'absent')" class="px-3 py-2 rounded-xl text-xs font-bold cursor-pointer ${status === 'absent' ? 'bg-red-600 text-white shadow' : 'bg-white text-slate-600 border border-slate-200'}">Absent</button>
+                        <button onclick="setPlayerStatus('${player.id}', 'pending')" class="px-2.5 py-2 rounded-xl text-xs font-bold cursor-pointer ${status === 'pending' ? 'bg-vhs-gold text-vhs-deep shadow' : 'bg-white text-slate-500 border border-slate-200'}">?</button>
+                        <button onclick="openNoteModal('${player.id}')" class="p-2 rounded-xl border border-slate-200 text-slate-400 hover:text-vhs-royal cursor-pointer">✏️</button>
                     </div>
                 </div>
             `;
@@ -1711,9 +808,7 @@
         function setPlayerStatus(playerId, newStatus) {
             const ev = appState.events.find(e => e.id === appState.selectedEventId);
             if (!ev) return;
-            // Sécurité : pour un match, seul un joueur convoqué peut avoir un statut actif
             if (ev.type === 'match' && !isPlayerConvokedForMatch(ev, playerId)) return;
-
             const record = getPlayerAttendance(ev.id, playerId);
             record.status = newStatus;
             saveState();
@@ -1725,132 +820,80 @@
         function markAllPlayers(status) {
             const ev = appState.events.find(e => e.id === appState.selectedEventId);
             if (!ev) return;
-
-            const targetPlayers = ev.type === 'match'
-                ? appState.players.filter(p => isPlayerConvokedForMatch(ev, p.id))
-                : appState.players;
-
-            targetPlayers.forEach(p => {
-                const record = getPlayerAttendance(ev.id, p.id);
-                record.status = status;
-            });
+            const targetPlayers = ev.type === 'match' ? appState.players.filter(p => isPlayerConvokedForMatch(ev, p.id)) : appState.players;
+            targetPlayers.forEach(p => { getPlayerAttendance(ev.id, p.id).status = status; });
             saveState();
             renderEventSelector();
             updateEventStats();
             renderAttendanceList();
-            showToast(status === 'present' ? 'Joueurs marqués présents' : 'Présences réinitialisées');
+            showToast('Mis à jour');
         }
 
-        // =========================================================
-        // VUE 2 : MATRICE GLOBALE D'ASSIDUITÉ
-        // =========================================================
         function renderMatrix() {
             const thead = document.getElementById('matrixTableHead');
             const tbody = document.getElementById('matrixTableBody');
+            if (!thead || !tbody) return;
 
             if (appState.events.length === 0 || appState.players.length === 0) {
                 thead.innerHTML = '';
-                tbody.innerHTML = `<tr><td class="p-6 text-center text-slate-500">Aucune donnée à afficher.</td></tr>`;
+                tbody.innerHTML = `<tr><td class="p-6 text-center text-slate-500">Aucune donnée.</td></tr>`;
                 return;
             }
 
             thead.innerHTML = `
                 <tr>
-                    <th class="py-3 px-4 font-extrabold sticky left-0 bg-vhs-royal z-10 min-w-[140px]">Joueur</th>
-                    ${appState.events.map(ev => `
-                        <th class="py-3 px-3 text-center min-w-[120px]">
-                            <div class="text-[10px] font-extrabold text-vhs-gold">
-                                ${ev.type === 'match' ? '🏆 MATCH' : '🤾 ENTRAÎN.'}
-                            </div>
-                            <div class="font-bold truncate max-w-[120px] mx-auto" title="${escapeHtml(ev.title)}">${escapeHtml(ev.title)}</div>
-                            <div class="text-[10px] text-blue-100 font-normal">${formatFrenchDate(ev.date)} • ${ev.time}</div>
-                        </th>
-                    `).join('')}
-                    <th class="py-3 px-4 text-center font-extrabold min-w-[95px]">Assiduité</th>
+                    <th class="py-3 px-4 font-extrabold sticky left-0 bg-vhs-royal text-white">Joueur</th>
+                    ${appState.events.map(ev => `<th class="py-3 px-3 text-center text-white"><div class="text-[10px] text-vhs-gold">${ev.type === 'match' ? 'MATCH' : 'ENTRAÎN.'}</div><div class="truncate max-w-[100px]">${escapeHtml(ev.title)}</div></th>`).join('')}
+                    <th class="py-3 px-4 text-center text-white">Total</th>
                 </tr>
             `;
 
             tbody.innerHTML = appState.players.map(player => {
-                let presentCount = 0;
-                let eligibleEventsCount = 0;
-
+                let presentCount = 0, eligible = 0;
                 const cells = appState.events.map(ev => {
                     if (ev.type === 'match' && !isPlayerConvokedForMatch(ev, player.id)) {
-                        return `<td class="py-2.5 px-3 text-center"><span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-400 font-bold text-xs" title="Non convoqué">—</span></td>`;
+                        return `<td class="py-2.5 px-3 text-center"><span class="text-slate-300">—</span></td>`;
                     }
-
-                    eligibleEventsCount++;
+                    eligible++;
                     const rec = getPlayerAttendance(ev.id, player.id);
                     if (rec.status === 'present') presentCount++;
-
-                    let badge = `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-700 font-bold text-xs" title="Incertain">?</span>`;
-                    if (rec.status === 'present') {
-                        badge = `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs" title="Présent">✓</span>`;
-                    } else if (rec.status === 'absent') {
-                        badge = `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 font-bold text-xs" title="Absent">✕</span>`;
-                    }
-
+                    let badge = '<span class="text-amber-600 font-bold">?</span>';
+                    if (rec.status === 'present') badge = '<span class="text-emerald-600 font-bold">✓</span>';
+                    else if (rec.status === 'absent') badge = '<span class="text-red-600 font-bold">✕</span>';
                     return `<td class="py-2.5 px-3 text-center">${badge}</td>`;
                 }).join('');
 
-                const rate = eligibleEventsCount > 0 ? Math.round((presentCount / eligibleEventsCount) * 100) : 0;
-                let rateColor = 'text-slate-700 bg-slate-100';
-                if (rate >= 75) rateColor = 'text-emerald-800 bg-emerald-100';
-                else if (rate >= 40) rateColor = 'text-amber-800 bg-amber-100';
-                else rateColor = 'text-red-800 bg-red-100';
-
+                const rate = eligible > 0 ? Math.round((presentCount / eligible) * 100) : 0;
                 return `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="py-2.5 px-4 font-bold text-slate-900 sticky left-0 bg-white border-r border-slate-100">
-                            ${escapeHtml(player.name)}
-                        </td>
+                    <tr class="hover:bg-slate-50 border-b border-slate-100">
+                        <td class="py-2.5 px-4 font-bold text-slate-900 sticky left-0 bg-white">${escapeHtml(player.name)}</td>
                         ${cells}
-                        <td class="py-2.5 px-4 text-center">
-                            <span class="px-2.5 py-1 rounded-full text-xs font-extrabold ${rateColor}">
-                                ${presentCount}/${eligibleEventsCount} (${rate}%)
-                            </span>
-                        </td>
+                        <td class="py-2.5 px-4 text-center font-bold text-xs">${presentCount}/${eligible} (${rate}%)</td>
                     </tr>
                 `;
             }).join('');
         }
 
-        // =========================================================
-        // VUE 3 : GESTION DE L'EFFECTIF
-        // =========================================================
         function renderRoster() {
             const grid = document.getElementById('rosterGrid');
-            if (appState.players.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-8 text-slate-500">Aucun joueur dans l'effectif.</div>`;
-                return;
-            }
-
+            if (!grid) return;
             grid.innerHTML = appState.players.map(player => {
                 const initials = player.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
                 return `
-                    <div class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 bg-slate-50/60 hover:bg-white hover:shadow-xs transition">
-                        <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-11 h-11 rounded-xl bg-vhs-royal text-vhs-gold font-black text-sm flex items-center justify-center shrink-0">
-                                ${player.number ? `#${player.number}` : initials}
-                            </div>
-                            <div class="min-w-0">
-                                <div class="font-bold text-slate-900 truncate">${escapeHtml(player.name)}</div>
-                                <div class="text-xs text-slate-500">${escapeHtml(player.role || 'Joueur')} ${player.number ? `• Maillot n°${player.number}` : ''}</div>
+                    <div class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 bg-slate-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-vhs-royal text-vhs-gold font-black text-sm flex items-center justify-center">${player.number ? `#${player.number}` : initials}</div>
+                            <div>
+                                <div class="font-bold text-slate-900">${escapeHtml(player.name)}</div>
+                                <div class="text-xs text-slate-500">${escapeHtml(player.role || 'Joueur')}</div>
                             </div>
                         </div>
-                        ${isCoach() ? `
-                            <button onclick="requestDeletePlayer('${player.id}')" title="Supprimer ce joueur" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
-                        ` : ''}
+                        ${isCoach() ? `<button onclick="requestDeletePlayer('${player.id}')" class="p-2 text-slate-400 hover:text-red-600 cursor-pointer">🗑️</button>` : ''}
                     </div>
                 `;
             }).join('');
         }
 
-        // =========================================================
-        // AJOUT & SUPPRESSION (JOUEURS, ÉVÉNEMENTS, NOTES)
-        // =========================================================
         function handleAddEvent(e) {
             e.preventDefault();
             if (!isCoach()) return;
@@ -1865,30 +908,19 @@
 
             const newEvent = {
                 id: 'ev_' + Date.now(),
-                type,
-                title,
-                date,
-                time,
+                type, title, date, time,
                 endTime: endTime || '',
-                location: location || 'Gymnase Dandreis, Vence'
+                location: location || 'Gymnase Dandreis, Vence',
+                selectedPlayerIds: type === 'match' ? [] : undefined
             };
-
-            if (type === 'match') {
-                newEvent.selectedPlayerIds = [];
-            }
 
             appState.events.push(newEvent);
             appState.events.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
             appState.selectedEventId = newEvent.id;
-
             saveState();
             closeModal('eventModal');
-            document.getElementById('eventTitle').value = '';
             switchMainTab('attendance');
-            showToast(type === 'match'
-                ? `Match "${title}" créé ! Sélectionnez maintenant les joueurs convoqués.`
-                : `Entraînement "${title}" ajouté !`
-            );
+            showToast('Événement ajouté');
         }
 
         function handleAddPlayer(e) {
@@ -1897,95 +929,52 @@
             const name = document.getElementById('playerName').value.trim();
             const number = document.getElementById('playerNumber').value.trim();
             const role = document.getElementById('playerRole').value;
-
             if (!name) return;
 
-            const newPlayer = {
-                id: 'pl_' + Date.now(),
-                name,
-                number,
-                role
-            };
-
-            appState.players.push(newPlayer);
+            appState.players.push({ id: 'pl_' + Date.now(), name, number, role });
             saveState();
             closeModal('playerModal');
             document.getElementById('playerName').value = '';
             document.getElementById('playerNumber').value = '';
             renderAll();
-            showToast(`${name} a rejoint l'effectif VHS !`);
+            showToast(`${name} ajouté`);
         }
 
         function requestDeleteCurrentEvent() {
             if (!isCoach()) return;
             const ev = appState.events.find(e => e.id === appState.selectedEventId);
             if (!ev) return;
-            openConfirmModal(
-                'Supprimer cet événement ?',
-                `Voulez-vous vraiment supprimer "${ev.title}" et toutes ses présences associées ?`,
-                () => {
-                    appState.events = appState.events.filter(e => e.id !== ev.id);
-                    delete appState.attendance[ev.id];
-                    appState.selectedEventId = appState.events.length > 0 ? appState.events[0].id : null;
-                    saveState();
-                    renderAll();
-                    showToast('Événement supprimé');
-                }
-            );
+            openConfirmModal('Supprimer cet événement ?', `Voulez-vous supprimer "${ev.title}" ?`, () => {
+                appState.events = appState.events.filter(e => e.id !== ev.id);
+                delete appState.attendance[ev.id];
+                appState.selectedEventId = appState.events.length > 0 ? appState.events[0].id : null;
+                saveState();
+                renderAll();
+                showToast('Supprimé');
+            });
         }
 
         function requestDeletePlayer(playerId) {
             if (!isCoach()) return;
             const player = appState.players.find(p => p.id === playerId);
             if (!player) return;
-            openConfirmModal(
-                'Retirer ce joueur ?',
-                `Voulez-vous retirer ${player.name} de l'effectif Vence Handball Sport ?`,
-                () => {
-                    appState.players = appState.players.filter(p => p.id !== playerId);
-                    Object.keys(appState.attendance).forEach(evId => {
-                        delete appState.attendance[evId][playerId];
-                    });
-                    appState.events.forEach(ev => {
-                        if (Array.isArray(ev.selectedPlayerIds)) {
-                            ev.selectedPlayerIds = ev.selectedPlayerIds.filter(id => id !== playerId);
-                        }
-                    });
-                    saveState();
-                    renderAll();
-                    showToast(`${player.name} retiré de l'effectif`);
-                }
-            );
-        }
-
-        function requestResetDemoData() {
-            if (!isCoach()) return;
-            openConfirmModal(
-                'Restaurer les données initiales ?',
-                'Cela réinitialisera la liste des 14 joueurs, les convocations et les créneaux d\'entraînement habituels de Vence Handball Sport pour tout le monde.',
-                () => {
-                    localStorage.removeItem(STORAGE_KEY);
-                    initDefaultState();
-                    appState.userRole = 'coach';
-                    saveState();
-                    renderAll();
-                    showToast('Données VHS restaurées et synchronisées');
-                }
-            );
+            openConfirmModal('Retirer ce joueur ?', `Retirer ${player.name} ?`, () => {
+                appState.players = appState.players.filter(p => p.id !== playerId);
+                Object.keys(appState.attendance).forEach(evId => { delete appState.attendance[evId][playerId]; });
+                saveState();
+                renderAll();
+                showToast('Joueur retiré');
+            });
         }
 
         function openNoteModal(playerId) {
             const ev = appState.events.find(e => e.id === appState.selectedEventId);
             const player = appState.players.find(p => p.id === playerId);
             if (!ev || !player) return;
-            if (ev.type === 'match' && !isPlayerConvokedForMatch(ev, playerId)) return;
-
-            const record = getPlayerAttendance(ev.id, playerId);
             document.getElementById('notePlayerId').value = playerId;
             document.getElementById('notePlayerName').textContent = player.name;
-            document.getElementById('noteInput').value = record.note || '';
+            document.getElementById('noteInput').value = getPlayerAttendance(ev.id, playerId).note || '';
             openModal('noteModal');
-            setTimeout(() => document.getElementById('noteInput').focus(), 50);
         }
 
         function setQuickNote(text) {
@@ -1997,32 +986,21 @@
             const evId = appState.selectedEventId;
             const playerId = document.getElementById('notePlayerId').value;
             const note = document.getElementById('noteInput').value.trim();
-
             if (evId && playerId) {
-                const record = getPlayerAttendance(evId, playerId);
-                record.note = note;
+                getPlayerAttendance(evId, playerId).note = note;
                 saveState();
                 renderAttendanceList();
-                showToast('Commentaire enregistré');
+                showToast('Note enregistrée');
             }
             closeModal('noteModal');
         }
 
-        // =========================================================
-        // PARTAGE WHATSAPP / PRESSE-PAPIERS
-        // =========================================================
         function copySummaryToClipboard() {
             const ev = appState.events.find(e => e.id === appState.selectedEventId);
             if (!ev) return;
-
             const isMatch = ev.type === 'match';
-            const presents = [];
-            const absents = [];
-            const pendings = [];
-
-            const targetPlayers = isMatch
-                ? appState.players.filter(p => isPlayerConvokedForMatch(ev, p.id))
-                : appState.players;
+            const presents = [], absents = [], pendings = [];
+            const targetPlayers = isMatch ? appState.players.filter(p => isPlayerConvokedForMatch(ev, p.id)) : appState.players;
 
             targetPlayers.forEach(p => {
                 const rec = getPlayerAttendance(ev.id, p.id);
@@ -2032,95 +1010,59 @@
                 else pendings.push(label);
             });
 
-            const typeLabel = isMatch ? '🏆 CONVOCATION MATCH' : '🤾 ENTRAÎNEMENT';
-            const timeRange = formatTimeSlot(ev.time, ev.endTime);
-            const lines = [
+            const text = [
                 `🔵🟡 *VENCE HANDBALL SPORT (VHS)*`,
-                `${typeLabel} : *${ev.title}*`,
-                `📅 ${formatFrenchDate(ev.date)} • ${timeRange}`,
-                `📍 ${ev.location}`,
-                ``
-            ];
-
-            if (isMatch) {
-                lines.push(`📋 *Joueurs convoqués (${targetPlayers.length}) :*`);
-            }
-
-            lines.push(`✅ *Présents (${presents.length}) :* ${presents.length ? presents.join(', ') : 'Aucun'}`);
-            lines.push(`❌ *Absents (${absents.length}) :* ${absents.length ? absents.join(', ') : 'Aucun'}`);
-            lines.push(`⏳ *En attente (${pendings.length}) :* ${pendings.length ? pendings.join(', ') : 'Aucun'}`);
-
-            const text = lines.join('\n');
+                `${isMatch ? '🏆 MATCH' : '🤾 ENTRAÎNEMENT'} : *${ev.title}*`,
+                `📅 ${formatFrenchDate(ev.date)} • ${formatTimeSlot(ev.time, ev.endTime)}`,
+                ``,
+                `✅ Présents (${presents.length}) : ${presents.join(', ') || 'Aucun'}`,
+                `❌ Absents (${absents.length}) : ${absents.join(', ') || 'Aucun'}`,
+                `⏳ En attente (${pendings.length}) : ${pendings.join(', ') || 'Aucun'}`
+            ].join('\n');
 
             const textarea = document.createElement('textarea');
             textarea.value = text;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
             document.body.appendChild(textarea);
             textarea.select();
             try {
                 document.execCommand('copy');
-                showToast('Récapitulatif copié ! Prêt à coller sur WhatsApp.');
-            } catch (err) {
-                showToast('Impossible de copier automatiquement.', true);
+                showToast('Copié pour WhatsApp !');
+            } catch {
+                showToast('Erreur copie', true);
             }
             document.body.removeChild(textarea);
         }
 
-        // =========================================================
-        // UTILITAIRES MODALES, TOAST & SÉCURITÉ
-        // =========================================================
         function openModal(id) {
             const el = document.getElementById(id);
-            el.classList.remove('hidden');
-            el.classList.add('flex');
+            if (el) { el.classList.remove('hidden'); el.classList.add('flex'); }
         }
 
         function closeModal(id) {
             const el = document.getElementById(id);
-            el.classList.add('hidden');
-            el.classList.remove('flex');
+            if (el) { el.classList.add('hidden'); el.classList.remove('flex'); }
         }
 
         function openConfirmModal(title, message, onConfirm) {
             document.getElementById('confirmTitle').textContent = title;
             document.getElementById('confirmMessage').textContent = message;
-            const btn = document.getElementById('confirmActionBtn');
-            btn.onclick = () => {
-                closeModal('confirmModal');
-                onConfirm();
-            };
+            document.getElementById('confirmActionBtn').onclick = () => { closeModal('confirmModal'); onConfirm(); };
             openModal('confirmModal');
         }
 
-        function showToast(message, isError = false) {
+        function showToast(msg, isError = false) {
             const container = document.getElementById('toastContainer');
+            if (!container) return;
             const toast = document.createElement('div');
-            toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg text-sm font-bold text-white transition-all transform translate-y-0 ${
-                isError ? 'bg-red-600' : 'bg-vhs-deep border border-vhs-gold/60'
-            }`;
-            toast.innerHTML = `
-                <i data-lucide="${isError ? 'alert-circle' : 'check-circle-2'}" class="w-4 h-4 text-vhs-gold shrink-0"></i>
-                <span>${escapeHtml(message)}</span>
-            `;
+            toast.className = `px-4 py-3 rounded-xl shadow-lg text-sm font-bold text-white ${isError ? 'bg-red-600' : 'bg-vhs-deep border border-vhs-gold'}`;
+            toast.textContent = msg;
             container.appendChild(toast);
-            lucide.createIcons();
-
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(10px)';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         function escapeHtml(str) {
             if (!str) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
     </script>
 </body>
